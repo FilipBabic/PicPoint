@@ -49,6 +49,7 @@ const InfoScreen = ({ route, navigation }) => {
     useEffect(() => {
         navigation.setOptions({ headerShown: false, tabBarVisible: false });
         getLocationInfo(place_id)
+        console.log("place ID ", place_id, longitude, latitude);
     }, []);
     return (
         <ImageBackground source={{ uri: uri }} style={{ flex: 1, width: 'auto', height: 'auto' }}>

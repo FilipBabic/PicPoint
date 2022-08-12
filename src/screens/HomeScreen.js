@@ -2,10 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Platform, Dimensions, ActivityIndicator, SafeAreaView, ScrollView, View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
 import moment from 'moment';
 import * as MediaLibrary from 'expo-media-library';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const screenWidth = Dimensions.get('window').width;
 const HomeScreen = ({ navigation }) => {
+    const GoogleMapsAPIKey = 'AIzaSyDoHOPQn79uYEHsJZ_1pRimuX1e_ZACNdg';
     const [isLoading, setIsLoading] = useState(true);
     const [images, setImages] = useState([{ test: 'bla' }, { test: 'bl3' }, { test: 'bl3' }]);
+    useEffect(() => {
+        navigation.setOptions({ headerShown: true });
+        getImagesFromLibrary();
+    }, []);
     const getImagesFromLibrary = async () => {
         setIsLoading(true);
         const res = await MediaLibrary.requestPermissionsAsync()
@@ -15,7 +21,6 @@ const HomeScreen = ({ navigation }) => {
                 sortBy: 'modificationTime'
             }).then(results => {
                 reduceImages(results.assets);
-                console.log("REZULTAT IMAGES:", images)
             }).catch((err) => {
                 console.error(err);
             });
@@ -48,31 +53,69 @@ const HomeScreen = ({ navigation }) => {
                 })
                 if (typeof result.location?.longitude === 'undefined') {
                     newImage = {
-                        ...image, place: 'NO LOCATION INFO'
+                        ...image, title: 'NO GPS LOCATION', isViewed: "yes", nearbyplaces: []
                     }
                 } else {
-                    // const place = await getPlaceFromAPI(result?.location?.latitude, result?.location?.longitude);
-                    // const place_id = await getPlaceIDFromAPI(result?.location?.latitude, result?.location?.longitude);
-                    const place = "some place"
-                    const place_id = "some place_id"
+                    const jsonValue = await getLocalStorageData(image.id)
                     const latitude = result?.location?.latitude;
                     const longitude = result?.location?.longitude;
-                    newImage = {
-                        ...image, place, place_id, latitude, longitude
+                    const isViewed = jsonValue?.isViewed
+                    if (isViewed === "yes") {
+                        const title = jsonValue?.title
+                        const place_id = jsonValue?.place_id
+                        newImage = {
+                            ...image, nearbyplaces: [], title, place_id, latitude, longitude, isViewed
+                        }
+                    } else if (isViewed === "no") {
+                        const nesto = await getNearByPlaces(latitude, longitude)
+                        const nearbyplaces = nesto.slice(0, 10)
+                        newImage = {
+                            ...image, nearbyplaces, latitude, longitude, isViewed
+                        }
                     }
                 }
             } catch (error) {
                 console.error(error);
             }
-            console.log("NEW IMAGE:", newImage)
             return newImage;
         };
     };
-    useEffect(() => {
-        navigation.setOptions({ headerShown: true });
-        getImagesFromLibrary();
-    }, []);
-
+    const getLocalStorageData = async (image_id) => {
+        try {
+            const jsonValue = await AsyncStorage.getItem(`@${image_id}`)
+            if (jsonValue === null) {
+                const obj = {
+                    title: 'no title',
+                    place_id: 'no place id',
+                    isViewed: 'no'
+                }
+                return obj
+            } else {
+                const data = JSON.parse(jsonValue)
+                const obj = {
+                    title: data?.title,
+                    place_id: data?.place_id,
+                    isViewed: 'yes'
+                }
+                return obj
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
+    const getNearByPlaces = async (latitude, longitude) => {
+        try {
+            const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&rankby=distance&key=' + GoogleMapsAPIKey);
+            const data = await response.json()
+            const name = data.results.map((name22) => {
+                const nesto = { name: name22.name, place_id: name22.place_id }
+                return nesto
+            })
+            return name
+        } catch (error) {
+            console.error(error);
+        }
+    }
     return isLoading === false ? (
         <SafeAreaView style={{ paddingTop: Platform.OS === 'android' ? 0 : 0 }}>
             <ScrollView>

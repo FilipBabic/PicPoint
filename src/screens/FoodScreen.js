@@ -9,8 +9,9 @@ const FoodScreen = ({ route, navigation }) => {
     const [isLoading, setIsLoading] = useState(false)
     const getNearByPlaces = async (latitude, longitude) => {
         try {
-            const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&keyword=food&radius=500&key=' + GoogleMapsAPIKey);
+            const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&keyword=food&rankby=distance&key=' + GoogleMapsAPIKey);
             const data = await response.json()
+            console.log("data res", data, latitude, longitude)
             uploadImages(data.results);
             setIsLoading(false);
         } catch (error) {
@@ -46,6 +47,7 @@ const FoodScreen = ({ route, navigation }) => {
     };
     useEffect(() => {
         setIsLoading(true)
+        console.log("LATITUDE LONGITUDE:", latitude, longitude)
         getNearByPlaces(latitude, longitude);
     }, [])
     return isLoading === false ? (

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, StatusBar, Button, ScrollView, View, Dimensions, ImageBackground, Image, TouchableWithoutFeedback, TouchableOpacity, Text, TextInput, ActivityIndicator, FlatList } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import EditIcon from '../icons/edit-icon.png';
+import render from 'react-native-web/dist/cjs/exports/render';
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 const DetailScreen = ({ route, navigation }) => {
@@ -15,26 +17,14 @@ const DetailScreen = ({ route, navigation }) => {
     const [test, setTest] = useState([true, false, false, false, false, false, false, false, false, false, false, false]);
     const [textFieldValue, setTextFieldValue] = useState(null)
     const { imagesTest, itemId } = route.params;
-    const getImagesFromLibrary = async () => {
-        setIsLoading(true);
-        setImages(imagesTest);
-        setIsLoading(false);
-    };
-
     useEffect(() => {
         navigation.setOptions({ headerShown: false });
-        getImagesFromLibrary()
-        const nesto = test[itemId];
-        const latitude = imagesTest[itemId]?.latitude
-        const longitude = imagesTest[itemId]?.longitude
-        if (nesto === true) {
-            setIsViewed(false)
-        } else if (nesto === false) {
-            setIsViewed(true)
-            getNearByPlaces(latitude, longitude)
-        }
+        setIsLoading(true)
+        setTitle(imagesTest[itemId].nearbyplaces[0]?.name)
+        setPlaceId(imagesTest[itemId].nearbyplaces[0]?.place_id)
+        setTextFieldValue(imagesTest[itemId].nearbyplaces[0]?.name)
+        setIsLoading(false)
     }, []);
-
     const Separator = () => (
         <View style={{
             marginVertical: 8,
@@ -42,25 +32,6 @@ const DetailScreen = ({ route, navigation }) => {
             borderBottomWidth: StyleSheet.hairlineWidth
         }} />
     );
-
-    const getPlaceFromAPI = async (latitude, longitude) => {
-        try {
-            const response = await fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + latitude + ',' + longitude + '&key=' + GoogleMapsAPIKey)
-            const data = await response.json()
-            return data?.results[0]?.formatted_address
-        } catch (error) {
-            console.error(error);
-        }
-    }
-    const getPlaceIDFromAPI = async (latitude, longitude) => {
-        try {
-            const response = await fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + latitude + ',' + longitude + '&key=' + GoogleMapsAPIKey)
-            const data = await response.json()
-            return data?.results[0]?.place_id
-        } catch (error) {
-            console.error(error);
-        }
-    }
     const getNearByPlaces = async (latitude, longitude) => {
         try {
             const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&rankby=distance&key=' + GoogleMapsAPIKey);
@@ -73,31 +44,27 @@ const DetailScreen = ({ route, navigation }) => {
             console.error(error);
         }
     }
-    const tapped = (item) => {
-        setBottomBar(!bottomBar);
-    };
     const getItemLayout = (data, index) => (
         { length: screenWidth, offset: screenWidth * index, index }
     );
-
     const swipedItem = (e) => {
-        setIsLoading(true)
-        setTitle(null)
         let contentOffset = e.nativeEvent.contentOffset;
         let viewSize = e.nativeEvent.layoutMeasurement;
         let pageNum = Math.floor(contentOffset.x / viewSize.width);
-        console.log('page number', pageNum);
-        const nesto = test[pageNum];
-        const latitude = images[pageNum]?.latitude;
-        const longitude = images[pageNum]?.longitude;
-        if (nesto === true) {
-            setIsViewed(false)
-        } else if (nesto === false) {
-            setIsViewed(true)
-            setTextFieldValue(null)
-            getNearByPlaces(latitude, longitude)
+        setTitle(imagesTest[pageNum].nearbyplaces[0]?.name)
+        setPlaceId(imagesTest[pageNum].nearbyplaces[0]?.place_id)
+        setTextFieldValue(imagesTest[pageNum].nearbyplaces[0]?.name)
+        if (imagesTest[pageNum].isViewed === "no") {
+            setBottomBar(false)
         }
-        setIsLoading(false)
+    }
+    const storeData = async (image_id, value) => {
+        try {
+            const jsonValue = JSON.stringify(value)
+            await AsyncStorage.setItem(`@${image_id}`, jsonValue)
+        } catch (e) {
+            console.error(e);
+        }
     }
     const renderItem = ({ item, index, separator }) => {
         const calculateAspectRatio = () => {
@@ -118,10 +85,10 @@ const DetailScreen = ({ route, navigation }) => {
                         </TouchableOpacity>
                     </View>
                 )}
-                <TouchableWithoutFeedback onPress={() => tapped(item)} underlayColor="black">
+                <TouchableWithoutFeedback onPress={() => setBottomBar(!bottomBar)} underlayColor="black">
                     <ImageBackground source={{ uri: item.uri }} style={{ width: screenWidth, aspectRatio: calculateAspectRatio() }} />
                 </TouchableWithoutFeedback>
-                {isViewed &&
+                {item.isViewed === "no" &&
                     (<View style={{
                         height: '50%', position: 'absolute',
                         top: '25%', width: '90%', backgroundColor: 'white', marginLeft: '5%'
@@ -129,17 +96,22 @@ const DetailScreen = ({ route, navigation }) => {
                             <Text style={{ marginTop: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>Pick a place for your photo</Text>
                             <TextInput
                                 style={{
-                                    height: 40,
-                                    margin: 12,
-                                    borderWidth: 1,
+                                    height: 44,
                                     padding: 10,
+                                    marginTop: 10,
+                                    width: '96%',
+                                    marginRight: '2%',
+                                    marginLeft: '2%',
+                                    borderWidth: 1,
+                                    borderColor: "black",
+                                    borderRadius: 5,
                                 }}
                                 onChangeText={setTextFieldValue}
                                 value={textFieldValue}
                                 placeholder="Pick place for your photo"
                                 keyboardType="default"
                             />
-                            {nearByPlaces.map((element, index, arr) => {
+                            {item?.nearbyplaces.map((element, index, arr) => {
                                 return (
                                     <View key={index} style={{
                                         padding: 5,
@@ -150,33 +122,29 @@ const DetailScreen = ({ route, navigation }) => {
                                         borderWidth: 1,
                                         borderColor: "thistle",
                                         borderRadius: 5,
-                                        textAlign: "center",
-                                        color: 'red'
+                                        textAlign: "center"
                                     }}>
                                         <TouchableOpacity onPress={() => {
                                             setTextFieldValue(element.name)
                                             setTitle(element.name)
                                             setPlaceId(element.place_id)
                                         }} underlayColor="grey">
-                                            <View style={{ backgroundColor: 'silver' }}>
+                                            <View>
                                                 <Text style={{
-
+                                                    padding: 10, fontSize: 15, fontWeight: 'bold'
                                                 }}>
                                                     {`\u2023 ${element.name}`}
-                                                    {/* {element.place_id} */}
                                                 </Text>
-                                                <Text style={{
+                                                {/* <Text style={{
 
                                                 }}>
-                                                    {element.vicinity}
-                                                </Text>
+                                                    {element.place_id}
+                                                </Text> */}
                                             </View>
                                         </TouchableOpacity>
                                     </View>
-
                                 )
                             })}
-
                         </ScrollView>
                         <View style={{
                             flexDirection: 'row',
@@ -184,12 +152,17 @@ const DetailScreen = ({ route, navigation }) => {
                             marginTop: 10,
                         }}>
                             <Button onPress={() => {
-                                setIsViewed(!isViewed)
-                                console.log("item id", item?.id)
-                                setTitle(textFieldValue)
+                                const obj = {
+                                    title,
+                                    place_id: placeId,
+                                    isViewed: "yes",
+                                    image_id: item?.id
+                                }
+                                imagesTest[index].isViewed = "yes"
+                                imagesTest[index].title = title
+                                storeData(item?.id, obj)
                                 setBottomBar(true)
                             }} title="Save" />
-
                         </View>
                         <Separator />
                     </View>
@@ -213,11 +186,12 @@ const DetailScreen = ({ route, navigation }) => {
                         <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
                             <Text style={{ textAlign: 'center', padding: 12, fontSize: 17 }}>
                                 {/* {item?.place} */}
-                                {title}
+                                {item?.title}
                             </Text>
                             <TouchableOpacity onPress={() => {
                                 setIsViewed(true)
-                                getNearByPlaces(images[index]?.latitude, images[index]?.longitude)
+                                imagesTest[index].isViewed = "no"
+                                //getNearByPlaces(imagesTest[index]?.latitude, imagesTest[index]?.longitude)
                             }}>
                                 <Image source={EditIcon} style={{ height: 40, width: 40 }} title="bla" />
                             </TouchableOpacity>
@@ -237,7 +211,7 @@ const DetailScreen = ({ route, navigation }) => {
                 onMomentumScrollEnd={swipedItem}
                 keyExtractor={item => item.id}
                 initialScrollIndex={itemId}
-                data={images}
+                data={imagesTest}
                 getItemLayout={getItemLayout}
                 renderItem={renderItem}
             />
