@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Platform, Dimensions, ActivityIndicator, SafeAreaView, ScrollView, View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
 import moment from 'moment';
+import { useHeaderHeight } from '@react-navigation/elements';
 import * as MediaLibrary from 'expo-media-library';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const screenWidth = Dimensions.get('window').width;
 const HomeScreen = ({ navigation }) => {
     const GoogleMapsAPIKey = 'AIzaSyDoHOPQn79uYEHsJZ_1pRimuX1e_ZACNdg';
     const [isLoading, setIsLoading] = useState(true);
+    const headerHeight = useHeaderHeight();
     const [images, setImages] = useState([{ test: 'bla' }, { test: 'bl3' }, { test: 'bl3' }]);
     useEffect(() => {
-        navigation.setOptions({ headerShown: true });
         getImagesFromLibrary();
     }, []);
     const getImagesFromLibrary = async () => {
@@ -67,8 +68,7 @@ const HomeScreen = ({ navigation }) => {
                             ...image, nearbyplaces: [], title, place_id, latitude, longitude, isViewed
                         }
                     } else if (isViewed === "no") {
-                        const nesto = await getNearByPlaces(latitude, longitude)
-                        const nearbyplaces = nesto.slice(0, 10)
+                        const nearbyplaces = await getNearByPlaces(latitude, longitude)
                         newImage = {
                             ...image, nearbyplaces, latitude, longitude, isViewed
                         }
@@ -107,18 +107,32 @@ const HomeScreen = ({ navigation }) => {
         try {
             const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&rankby=distance&key=' + GoogleMapsAPIKey);
             const data = await response.json()
-            const name = data.results.map((name22) => {
-                const nesto = { name: name22.name, place_id: name22.place_id }
+            var name = data.results.map((name22) => {
+                const nesto = { name: name22.name, place_id: name22.place_id, selected22: false }
                 return nesto
             })
+            name[0].selected22 = true;
             return name
         } catch (error) {
             console.error(error);
         }
     }
+    // const clearLocalStorage = async () => {
+    //     try {
+    //         await AsyncStorage.clear()
+    //     } catch (e) {
+    //         // clear error
+    //     }
+    //     console.log('Done.')
+    // }
     return isLoading === false ? (
-        <SafeAreaView style={{ paddingTop: Platform.OS === 'android' ? 0 : 0 }}>
+        <View style={{ paddingTop: Platform.OS === 'android' ? 0 : 0 }}>
             <ScrollView>
+                {/* <TouchableOpacity onPress={clearLocalStorage}>
+                    <Text>
+                        CLEAR LOCAL STORAGE
+                    </Text>
+                </TouchableOpacity> */}
                 <View style={styles.container}>
                     {images.map((element, index, arr) => {
                         return (
@@ -129,7 +143,8 @@ const HomeScreen = ({ navigation }) => {
                                     navigation.navigate('Details', {
                                         imagesTest: images,
                                         itemId: index,
-                                        uri: images.uri
+                                        uri: images.uri,
+                                        headerHeight
                                     });
                                 }} underlayColor="grey">
                                     <Image key={index} source={{ uri: element.uri }} style={styles.images} />
@@ -138,7 +153,7 @@ const HomeScreen = ({ navigation }) => {
                     })}
                 </View>
             </ScrollView>
-        </SafeAreaView >
+        </View >
     ) : (
         <View style={styles.activityIndicator}>
             <ActivityIndicator size="large" color="grey" />

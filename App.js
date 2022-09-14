@@ -5,7 +5,6 @@ import DetailScreen from './src/screens/DetailScreen';
 import TestScreen from './src/screens/TestScreen';
 import FoodScreen from './src/screens/FoodScreen';
 import FoodDetails from './src/screens/FoodDetails';
-import InformationScreen from './src/screens/InformationScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Tabs from './src/components/Tabs';
 
@@ -43,10 +42,34 @@ export default function App() {
           },
 
         }} />
-        <Stack.Screen name="Information" component={Tabs} />
+        <Stack.Screen name="Information" component={Tabs} options={{
+          headerBackTitle: '',
+          headerTitle: 'Informations',
+          headerTitleStyle: {
+            fontWeight: '900',
+            color: '#393939'
+          },
+          headerTintColor: '#393939',
+        }} />
         <Stack.Screen name="Details" component={DetailScreen} />
-        <Stack.Screen name="FoodDetails" component={FoodDetails} />
-        <Stack.Screen name="Food" component={FoodScreen} />
+        <Stack.Screen name="FoodDetails" component={FoodDetails} options={{
+          headerBackTitle: '',
+          headerTitle: 'Details',
+          headerTitleStyle: {
+            fontWeight: '900',
+            color: '#393939'
+          },
+          headerTintColor: '#393939',
+        }} />
+        <Stack.Screen name="Food" component={FoodScreen} options={{
+          headerBackTitle: '',
+          headerTitle: 'Food',
+          headerTitleStyle: {
+            fontWeight: '900',
+            color: '#393939'
+          },
+          headerTintColor: '#393939',
+        }} />
         <Stack.Screen name="TestScreen" component={TestScreen} options={{
           title: 'New pix',
           headerStyle: {

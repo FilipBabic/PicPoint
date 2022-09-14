@@ -1,118 +1,161 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Text, TouchableOpacity, Image, ImageBackground, ActivityIndicator, Dimensions } from 'react-native';
+import FoodBackground from '../icons/31-food-background.png';
+import Star from '../icons/08-star.png';
+const screenWidth = Dimensions.get('window').width;
 const FoodScreen = ({ route, navigation }) => {
     const GoogleMapsAPIKey = 'AIzaSyDoHOPQn79uYEHsJZ_1pRimuX1e_ZACNdg';
     const latitude = route.params.latitude;
     const longitude = route.params.longitude;
     const [foodPlaces, setFoodPlaces] = useState([]);
-    const [testImage, setTestImage] = useState();
     const [isLoading, setIsLoading] = useState(false)
+    const calculateStars = (num) => {
+        if (num > 1 && num <= 1.5) {
+            let bla = <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+                <Image source={Star} style={{ height: 20, width: 20 }} /></View>
+            return bla
+        } else if (num > 1.5 && num <= 2.5) {
+            let bla = <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+                <Image source={Star} style={{ height: 20, width: 20 }} />
+                <Image source={Star} style={{ height: 20, width: 20 }} /></View>
+            return bla
+        } else if (num > 2.5 && num <= 3.5) {
+            let bla = <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+                <Image source={Star} style={{ height: 20, width: 20 }} />
+                <Image source={Star} style={{ height: 20, width: 20 }} />
+                <Image source={Star} style={{ height: 20, width: 20 }} /></View>
+            return bla
+        } else if (num > 3.5 && num <= 4.5) {
+            let bla = <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+                <Image source={Star} style={{ height: 20, width: 20 }} />
+                <Image source={Star} style={{ height: 20, width: 20 }} />
+                <Image source={Star} style={{ height: 20, width: 20 }} />
+                <Image source={Star} style={{ height: 20, width: 20 }} /></View>
+            return bla
+        } else if (num > 4.5 && num <= 5) {
+            let bla = <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+                <Image source={Star} style={{ height: 20, width: 20 }} />
+                <Image source={Star} style={{ height: 20, width: 20 }} />
+                <Image source={Star} style={{ height: 20, width: 20 }} />
+                <Image source={Star} style={{ height: 20, width: 20 }} />
+                <Image source={Star} style={{ height: 20, width: 20 }} /></View>
+            return bla
+        }
+    }
     const getNearByPlaces = async (latitude, longitude) => {
         try {
             const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&keyword=food&rankby=distance&key=' + GoogleMapsAPIKey);
             const data = await response.json()
-            console.log("data res", data, latitude, longitude)
-            uploadImages(data.results);
+            setFoodPlaces(data.results);
+            //uploadImages(data.results);
             setIsLoading(false);
         } catch (error) {
             console.error(error);
         }
     }
-    const uploadImages = async (images) => {
-        const updatedImages = await Promise.all(images.map(async (image) => {
-            const photoReference = image?.photos?.photo_reference
-            const result = await getImageFromApi(photoReference);
-            image = {
-                ...image, uri: result
-            }
-            return image
-        }));
-        console.log("updated images", updatedImages)
-        setFoodPlaces(updatedImages);
-    }
-    const getImageFromApi = async (photo) => {
-        try {
-            const response = await fetch('https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=' + photo + '&key=AIzaSyDoHOPQn79uYEHsJZ_1pRimuX1e_ZACNdg')
-            const imageBlob = await response.blob();
-            const imageObjectURL = URL.createObjectURL(imageBlob);
-            console.log("Image Object", imageObjectURL);
-            // setTestImage(response);
-            // // newObject = {
-            // //     ...test, uri: imageObjectURL
-            // // }
-            return imageObjectURL
-        } catch (error) {
-            console.error(error);
-        }
-    };
+    // const uploadImages = async (images) => {
+    //     const updatedImages = await Promise.all(images.map(async (image) => {
+    //         const photoReference = image?.photos?.photo_reference
+    //         const result = await getImageFromApi(photoReference);
+    //         image = {
+    //             ...image, uri: result
+    //         }
+    //         return image
+    //     }));
+    //     setFoodPlaces(updatedImages);
+    // }
+    // const getImageFromApi = async (photo) => {
+    //     try {
+    //         const response = await fetch('https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=' + photo + '&key=AIzaSyDoHOPQn79uYEHsJZ_1pRimuX1e_ZACNdg')
+    //         const imageBlob = await response.blob();
+    //         const imageObjectURL = URL.createObjectURL(imageBlob);
+    //         //console.log("Image Object", imageObjectURL);
+    //         // setTestImage(response);
+    //         // // newObject = {
+    //         // //     ...test, uri: imageObjectURL
+    //         // // }
+    //         return imageObjectURL
+    //     } catch (error) {
+    //         console.error(error);
+    //     }
+    // };
     useEffect(() => {
         setIsLoading(true)
-        console.log("LATITUDE LONGITUDE:", latitude, longitude)
         getNearByPlaces(latitude, longitude);
     }, [])
     return isLoading === false ? (
         <ScrollView>
-            <View style={{ backgroundColor: 'aliceblue' }}>
-                <Text style={{ fontSize: 16, paddingTop: 10, textAlign: 'center' }}>
+            <View style={{ backgroundColor: '#f2fbfc' }}>
+                <Text style={{ fontSize: 16, paddingTop: 10, textAlign: 'center', fontWeight: '800' }}>
                     Buy food within a radius of 500 m
                 </Text>
                 <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', padding: 5 }}>
                     {foodPlaces.map((element, index, arr) => {
-
+                        let isOpen = element.opening_hours?.open_now
                         return (
                             <View key={index} style={{
-                                padding: 5,
                                 marginTop: 10,
-                                width: '46%',
-                                marginRight: '2%',
-                                marginLeft: '2%',
+                                width: '48%',
+                                marginRight: '1%',
+                                marginLeft: '1%',
                                 borderWidth: 1,
-                                borderColor: "thistle",
-                                borderRadius: 5,
-                                textAlign: "center",
-                                color: 'red'
+                                borderColor: '#e7e7e7',
+                                borderRadius: 15,
+                                backgroundColor: 'white'
                             }}>
                                 <TouchableOpacity onPress={() => {
                                     navigation.navigate('FoodDetails', {
-                                        place_id: element.place_id
+                                        place_id: element.place_id,
+                                        name: element.name,
+                                        openNow: element.opening_hours?.open_now,
+                                        rating: element.rating,
+                                        totalUserRanking: element.user_ratings_total
                                     });
                                 }} underlayColor="grey">
-                                    <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
-                                        <Image source={{ uri: `${element.icon}` }} style={{ height: 20, width: 20 }} />
+                                    <View>
                                         <Text style={{
-                                            fontWeight: 'bold', padding: 6,
+                                            fontSize: 15, fontWeight: '900', padding: 6, textAlign: 'center'
                                         }}>
                                             {element.name}
                                         </Text>
                                     </View>
-                                    <Image source={{ uri: `${element.uri}` }} style={{ height: 90, backgroundColor: 'red' }} />
-                                    <Text>
-                                        Open now:
-                                        {element.opening_hours?.open_now === true ? "YES" : "NO"}
-                                    </Text>
-                                    <Text>
-                                        Place rating:
-                                        {element.rating}
-                                    </Text>
-                                    <Text>
-                                        Price level:
-                                        {element.price_level}
-                                    </Text>
-                                    <Text>
-                                        Total user ratings:
-                                        {element.user_ratings_total}
-                                    </Text>
-
-                                    {/* <Text>
-                                        URI: {element.uri}
-                                    </Text> */}
-                                    <Text>
-                                        Address:
-                                        {element.vicinity}
-                                    </Text>
+                                    <View style={{ borderWidth: 1 }}>
+                                        <Image source={FoodBackground} style={{ height: 90 }} />
+                                        <View style={{ position: 'absolute', paddingTop: 5, paddingBottom: 5, paddingLeft: 10, paddingRight: 10, top: 0, left: isOpen ? '35%' : '30%', backgroundColor: isOpen ? 'green' : 'red', borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}>
+                                            <Text style={{ color: 'white', fontWeight: '900', fontSize: 15 }}>
+                                                {element.opening_hours?.open_now === true ? "Open" : "Closed"}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 10 }}>
+                                        <ImageBackground source={FoodBackground} style={{ width: screenWidth / 2 - 40, height: screenWidth / 2 - 40 }}>
+                                            <Text style={{ fontSize: 14, color: '#c9c9c9', paddingTop: 15 }}>
+                                                Price level:
+                                            </Text>
+                                            <Text style={{ fontSize: 16, fontWeight: 'bold', paddingBottom: 10 }}>
+                                                {element.price_level ? `${element.price_level}/5` : 'No info'}
+                                            </Text>
+                                            <Text style={{ fontSize: 14, color: '#c9c9c9' }}>
+                                                Address:
+                                            </Text>
+                                            <Text style={{ fontSize: 16, fontWeight: 'bold', paddingBottom: 10 }}>
+                                                {element.vicinity}
+                                            </Text>
+                                        </ImageBackground>
+                                    </View>
+                                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', padding: 8, borderTopWidth: 2, borderColor: '#f2f2f2' }}>
+                                        <Text style={{ fontSize: 16, color: '#393939' }}>
+                                            {element.rating}
+                                        </Text>
+                                        <View style={{ flex: 1, flexDirection: 'row' }}>
+                                            {calculateStars(element.rating)}
+                                        </View>
+                                        <Text style={{ fontSize: 16, color: '#393939' }}>
+                                            {`(${element.user_ratings_total})`}
+                                        </Text>
+                                    </View>
                                 </TouchableOpacity>
                             </View>
-
                         )
                     })}
                 </View>
