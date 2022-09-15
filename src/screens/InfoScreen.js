@@ -152,7 +152,13 @@ const InfoScreen = ({ route, navigation }) => {
                                     </Text>
                                 </View>
                             </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={() => setSelected([false, false, false, false, false, false, true, false, false, false])}>
+                            <TouchableWithoutFeedback onPress={() => {
+                                setSelected([false, false, false, false, false, false, true, false, false, false])
+                                navigation.navigate('Attraction', {
+                                    latitude,
+                                    longitude
+                                });
+                            }}>
                                 <View style={{
                                     alignItems: 'center',
                                 }}>
@@ -162,7 +168,13 @@ const InfoScreen = ({ route, navigation }) => {
                                     </Text>
                                 </View>
                             </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={() => setSelected([false, false, false, false, false, false, false, true, false, false])}>
+                            <TouchableWithoutFeedback onPress={() => {
+                                setSelected([false, false, false, false, false, false, false, true, false, false])
+                                navigation.navigate('Accommodation', {
+                                    latitude,
+                                    longitude
+                                });
+                            }}>
                                 <View style={{
                                     alignItems: 'center',
                                 }}>

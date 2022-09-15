@@ -5,6 +5,10 @@ import DetailScreen from './src/screens/DetailScreen';
 import TestScreen from './src/screens/TestScreen';
 import FoodScreen from './src/screens/FoodScreen';
 import FoodDetails from './src/screens/FoodDetails';
+import AttractionScreen from './src/screens/AttractionScreen';
+import AttractionDetails from './src/screens/AttractionDetails';
+import AccommodationScreen from './src/screens/AccommodationsScreen';
+import AccommodationDetails from './src/screens/AccommodationDetails';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Tabs from './src/components/Tabs';
 
@@ -64,6 +68,42 @@ export default function App() {
         <Stack.Screen name="Food" component={FoodScreen} options={{
           headerBackTitle: '',
           headerTitle: 'Food',
+          headerTitleStyle: {
+            fontWeight: '900',
+            color: '#393939'
+          },
+          headerTintColor: '#393939',
+        }} />
+        <Stack.Screen name="AttractionDetails" component={AttractionDetails} options={{
+          headerBackTitle: '',
+          headerTitle: 'Details',
+          headerTitleStyle: {
+            fontWeight: '900',
+            color: '#393939'
+          },
+          headerTintColor: '#393939',
+        }} />
+        <Stack.Screen name="Attraction" component={AttractionScreen} options={{
+          headerBackTitle: '',
+          headerTitle: 'Attractions',
+          headerTitleStyle: {
+            fontWeight: '900',
+            color: '#393939'
+          },
+          headerTintColor: '#393939',
+        }} />
+        <Stack.Screen name="AccommodationDetails" component={AccommodationDetails} options={{
+          headerBackTitle: '',
+          headerTitle: 'Details',
+          headerTitleStyle: {
+            fontWeight: '900',
+            color: '#393939'
+          },
+          headerTintColor: '#393939',
+        }} />
+        <Stack.Screen name="Accommodation" component={AccommodationScreen} options={{
+          headerBackTitle: '',
+          headerTitle: 'Accommodations',
           headerTitleStyle: {
             fontWeight: '900',
             color: '#393939'
