@@ -7,22 +7,39 @@ import EditGrayIcon from '../icons/03-edit-silver.png';
 import InfoButton from '../icons/01-home.png';
 import ShareIcon from '../icons/10-share.png';
 import ArrowBack from '../icons/04-arrow-back.png';
+import * as Font from 'expo-font';
+
+let customFonts = {
+    'Poppins-Regular': require('../fonts/Poppins-Regular.ttf'),
+    'Poppins-Bold': require('../fonts/Poppins-Bold.ttf'),
+};
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
+const GoogleMapsAPIKey = 'AIzaSyDoHOPQn79uYEHsJZ_1pRimuX1e_ZACNdg';
 class Photo extends React.PureComponent {
     constructor(props) {
         super(props);
+        console.log('HEADER: ', this.props.headerHeight)
         this.scrollRef = React.createRef()
         this.state = {
+            fontsLoaded: false,
             isLoading: false,
             bottomBar: true,
             isViewed: this.props.item.isViewed,
-            near_by_places: false,
+            near_by_places: this.props.item.nearbyplaces,
             placeId: this.props.item.nearbyplaces[0]?.place_id,
             title: this.props.item.title,
             selected22: [],
             textFieldValue: this.props.item.nearbyplaces[0]?.name
         };
+    }
+    async _loadFontsAsync() {
+        await Font.loadAsync(customFonts);
+        this.setState({ fontsLoaded: true });
+    }
+
+    componentDidMount() {
+        this._loadFontsAsync();
     }
     render() {
         const storeData = async (image_id, value) => {
@@ -58,11 +75,25 @@ class Photo extends React.PureComponent {
             this.props.item.title = this.props.item.nearbyplaces[id]?.name
             this.props.item.place_id = this.props.item.nearbyplaces[id]?.place_id
         }
+        const editPlaces = async (latitude, longitude) => {
+            console.log("langitude", latitude, longitude)
+            try {
+                const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&rankby=distance&key=' + GoogleMapsAPIKey);
+                const data = await response.json()
+                this.setState({ near_by_places: data?.results })
+                console.log(data)
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        if (!this.state.fontsLoaded) {
+            return null;
+        }
         return (
             <View style={{ marginTop: 0, justifyContent: 'center', backgroundColor: 'black', width: screenWidth, height: screenHeight }}>
+                <ImageBackground source={{ uri: this.props.item.uri }} style={{ width: screenWidth, aspectRatio: calculateAspectRatio() }} />
                 {this.state.isViewed === "yes" && (
                     <View style={{
-                        height: this.props.headerHeight,
                         position: 'absolute',
                         top: 0,
                         width: '100%',
@@ -75,18 +106,19 @@ class Photo extends React.PureComponent {
                         }}>
                             <TouchableOpacity style={{ height: '100%' }} onPress={() => this.props.navigation.navigate('Home')}>
                                 <Image source={ArrowBack} style={{
-                                    height: 30,
-                                    width: 16,
-                                    marginTop: this.props.headerHeight / 2 - 15,
+                                    height: 20,
+                                    width: 14,
+                                    marginTop: 12,
+                                    marginBottom: 12,
                                     marginLeft: 10
                                 }} title="Info Button" />
                             </TouchableOpacity>
                             <TouchableOpacity style={{ flexDirection: 'row' }} onPress={() => this.props.navigation.navigate('Home')}>
                                 <Text style={{
                                     fontSize: 19,
-                                    fontWeight: 'bold',
+                                    fontFamily: 'Poppins-Bold',
                                     color: '#393939',
-                                    marginTop: this.props.headerHeight / 2 - 11,
+                                    marginTop: 11,
                                     paddingRight: 6
                                 }}>
                                     Share
@@ -96,7 +128,7 @@ class Photo extends React.PureComponent {
                                         backgroundColor: 'white',
                                         height: 22,
                                         width: 26,
-                                        marginTop: this.props.headerHeight / 2 - 11,
+                                        marginTop: 11,
                                         marginRight: 5
                                     }} title="Share Button" />
                                 </View>
@@ -104,7 +136,6 @@ class Photo extends React.PureComponent {
                         </View>
                     </View>
                 )}
-                <ImageBackground source={{ uri: this.props.item.uri }} style={{ width: screenWidth, aspectRatio: calculateAspectRatio() }} />
                 {this.state.isViewed === "no" &&
                     (<View style={{
                         height: '50%',
@@ -126,7 +157,7 @@ class Photo extends React.PureComponent {
                                     paddingTop: 15,
                                     paddingBottom: 15,
                                     textAlign: 'center',
-                                    fontSize: 20, fontWeight: '900',
+                                    fontSize: 20, fontFamily: 'Poppins-Bold',
                                     color: '#3d3d3d'
                                 }}>
                                     Pick a place for your photo</Text>
@@ -152,6 +183,7 @@ class Photo extends React.PureComponent {
                                         style={{
                                             paddingLeft: 8,
                                             fontSize: 18,
+                                            fontFamily: 'Poppins-Regular',
                                             color: '#3d3d3d'
                                         }}
                                         onChangeText={(text) => this.setState({ textFieldValue: text })}
@@ -160,7 +192,7 @@ class Photo extends React.PureComponent {
                                         keyboardType="default"
                                     />
                                 </View>
-                                {this.props.item.nearbyplaces.map((element, index, arr) => {
+                                {this.state.near_by_places.map((element, index, arr) => {
                                     return (
                                         <View key={index} style={{
                                             padding: 5,
@@ -185,7 +217,7 @@ class Photo extends React.PureComponent {
                                                     <Text style={{
                                                         padding: 10,
                                                         fontSize: 17,
-                                                        fontWeight: 'bold',
+                                                        fontFamily: 'Poppins-Regular',
                                                         color: element.selected22 ? 'white' : '#c9c9c9'
                                                     }}>
                                                         {`\u2192 ${element.name}`}
@@ -226,7 +258,7 @@ class Photo extends React.PureComponent {
                                     colors={['#E0038C', '#6A2B90']}>
                                     <Text style={{
                                         fontSize: 17,
-                                        fontWeight: 'bold',
+                                        fontFamily: 'Poppins-Bold',
                                         color: 'white',
                                     }}>
                                         Save
@@ -240,7 +272,7 @@ class Photo extends React.PureComponent {
                 {this.state.isViewed === "yes" && (
                     <View style={{
                         position: 'absolute',
-                        bottom: this.props.headerHeight,
+                        bottom: 0,
                         width: '100%',
                         backgroundColor: 'transparent'
                     }}>
@@ -265,9 +297,13 @@ class Photo extends React.PureComponent {
                             backgroundColor: 'black'
                         }}>
                             <TouchableOpacity onPress={() => {
+                                this.setState({ isViewed: "no" })
+                                console.log(this.props.item.isViewed)
+                                editPlaces(this.props.item.latitude, this.props.item.longitude)
                                 // setIsViewed(false)
                                 // imagesTest[index].isViewed = "no"
                                 // console.log("KLIKED")
+
                                 // getNearByPlaces(imagesTest[index]?.latitude, imagesTest[index]?.longitude)
                                 // imagesTest[index].nearbyplaces = nearByPlaces
                             }}>
@@ -277,6 +313,7 @@ class Photo extends React.PureComponent {
                                 textAlign: 'center',
                                 padding: 12,
                                 fontSize: 17,
+                                fontFamily: 'Poppins-Regular',
                                 color: 'white'
                             }}>
                                 {this.state.title}

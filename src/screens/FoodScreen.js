@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, TouchableOpacity, Image, ImageBackground, ActivityIndicator, Dimensions } from 'react-native';
+import { useFonts } from 'expo-font';
 import FoodBackground from '../icons/31-food-background.png';
 import Star from '../icons/08-star.png';
 const screenWidth = Dimensions.get('window').width;
@@ -8,6 +9,7 @@ const FoodScreen = ({ route, navigation }) => {
     const latitude = route.params.latitude;
     const longitude = route.params.longitude;
     const [foodPlaces, setFoodPlaces] = useState([]);
+    const [foodImages, setFoodImages] = useState({});
     const [isLoading, setIsLoading] = useState(false)
     const calculateStars = (num) => {
         if (num > 1 && num <= 1.5) {
@@ -43,50 +45,73 @@ const FoodScreen = ({ route, navigation }) => {
         }
     }
     const getNearByPlaces = async (latitude, longitude) => {
-        try {
-            const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&keyword=food&rankby=distance&key=' + GoogleMapsAPIKey);
-            const data = await response.json()
-            setFoodPlaces(data.results);
-            //uploadImages(data.results);
-            setIsLoading(false);
-        } catch (error) {
-            console.error(error);
-        }
+        fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&keyword=food&rankby=distance&key=' + GoogleMapsAPIKey)
+            .then((response) => response.json())
+            .then((json) => {
+                setFoodPlaces(
+                    json.results
+                );
+            })
+            .catch((error) => {
+                console.error(error);
+            })
     }
-    // const uploadImages = async (images) => {
-    //     const updatedImages = await Promise.all(images.map(async (image) => {
-    //         const photoReference = image?.photos?.photo_reference
-    //         const result = await getImageFromApi(photoReference);
-    //         image = {
-    //             ...image, uri: result
-    //         }
-    //         return image
-    //     }));
-    //     setFoodPlaces(updatedImages);
-    // }
-    // const getImageFromApi = async (photo) => {
-    //     try {
-    //         const response = await fetch('https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=' + photo + '&key=AIzaSyDoHOPQn79uYEHsJZ_1pRimuX1e_ZACNdg')
-    //         const imageBlob = await response.blob();
-    //         const imageObjectURL = URL.createObjectURL(imageBlob);
-    //         //console.log("Image Object", imageObjectURL);
-    //         // setTestImage(response);
-    //         // // newObject = {
-    //         // //     ...test, uri: imageObjectURL
-    //         // // }
-    //         return imageObjectURL
-    //     } catch (error) {
-    //         console.error(error);
-    //     }
-    // };
     useEffect(() => {
         setIsLoading(true)
         getNearByPlaces(latitude, longitude);
     }, [])
+
+    useEffect(() => {
+        if (foodPlaces.length === 0) {
+            return;
+        }
+        foodPlaces.forEach((item) => {
+            if (item.photos == null) {
+                setFoodImages((oldState) => ({
+                    ...oldState,
+                    [item.place_id]: null
+                }));
+                return;
+            }
+            fetch('https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=' + item.photos[0].photo_reference + '&key=AIzaSyDoHOPQn79uYEHsJZ_1pRimuX1e_ZACNdg')
+                .then((response) => response.blob())
+                .then((blob) => {
+                    let base64data;
+                    const fileReaderInstance = new FileReader();
+                    fileReaderInstance.readAsDataURL(blob);
+                    fileReaderInstance.onload = () => {
+                        base64data = fileReaderInstance.result;
+                        setFoodImages((oldState) => ({
+                            ...oldState,
+                            [item.place_id]: base64data
+                        }));
+                    }
+                }).catch((error) => {
+                    console.error(error);
+                }).then(() => {
+                    setIsLoading(false);
+                })
+        })
+    }, [foodPlaces])
+
+    const [fontsLoaded] = useFonts({
+        'Poppins-Regular': require('../fonts/Poppins-Regular.ttf'),
+        'Poppins-Bold': require('../fonts/Poppins-Bold.ttf'),
+    });
+    if (!fontsLoaded) {
+        return null;
+    }
+
+    const renderImage = (img) => {
+        if (img === null) {
+            return <Image source={FoodBackground} style={{ height: 120, width: 120 }} />;
+        }
+        return <Image source={{ uri: `${img}` }} style={{ height: 120 }} />
+    }
     return isLoading === false ? (
         <ScrollView>
             <View style={{ backgroundColor: '#f2fbfc' }}>
-                <Text style={{ fontSize: 16, paddingTop: 10, textAlign: 'center', fontWeight: '800' }}>
+                <Text style={{ fontFamily: 'Poppins-Bold', fontSize: 16, paddingTop: 10, textAlign: 'center' }}>
                     Buy food within a radius of 500 m
                 </Text>
                 <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', padding: 5 }}>
@@ -114,43 +139,43 @@ const FoodScreen = ({ route, navigation }) => {
                                 }} underlayColor="grey">
                                     <View>
                                         <Text style={{
-                                            fontSize: 15, fontWeight: '900', padding: 6, textAlign: 'center'
+                                            fontFamily: 'Poppins-Bold', fontSize: 15, padding: 6, textAlign: 'center'
                                         }}>
                                             {element.name}
                                         </Text>
                                     </View>
                                     <View style={{ borderWidth: 1 }}>
-                                        <Image source={FoodBackground} style={{ height: 90 }} />
+                                        {renderImage(foodImages[element.place_id])}
                                         <View style={{ position: 'absolute', paddingTop: 5, paddingBottom: 5, paddingLeft: 10, paddingRight: 10, top: 0, left: isOpen ? '35%' : '30%', backgroundColor: isOpen ? 'green' : 'red', borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}>
-                                            <Text style={{ color: 'white', fontWeight: '900', fontSize: 15 }}>
+                                            <Text style={{ color: 'white', fontFamily: 'Poppins-Bold', fontSize: 15 }}>
                                                 {element.opening_hours?.open_now === true ? "Open" : "Closed"}
                                             </Text>
                                         </View>
                                     </View>
                                     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 10 }}>
                                         <ImageBackground source={FoodBackground} style={{ width: screenWidth / 2 - 40, height: screenWidth / 2 - 40 }}>
-                                            <Text style={{ fontSize: 14, color: '#c9c9c9', paddingTop: 15 }}>
+                                            <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 14, color: '#c9c9c9', paddingTop: 15 }}>
                                                 Price level:
                                             </Text>
-                                            <Text style={{ fontSize: 16, fontWeight: 'bold', paddingBottom: 10 }}>
+                                            <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 16, fontWeight: 'bold', paddingBottom: 10 }}>
                                                 {element.price_level ? `${element.price_level}/5` : 'No info'}
                                             </Text>
-                                            <Text style={{ fontSize: 14, color: '#c9c9c9' }}>
+                                            <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 14, color: '#c9c9c9' }}>
                                                 Address:
                                             </Text>
-                                            <Text style={{ fontSize: 16, fontWeight: 'bold', paddingBottom: 10 }}>
+                                            <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 16, fontWeight: 'bold', paddingBottom: 10 }}>
                                                 {element.vicinity}
                                             </Text>
                                         </ImageBackground>
                                     </View>
                                     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', padding: 8, borderTopWidth: 2, borderColor: '#f2f2f2' }}>
-                                        <Text style={{ fontSize: 16, color: '#393939' }}>
+                                        <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 16, color: '#393939' }}>
                                             {element.rating}
                                         </Text>
                                         <View style={{ flex: 1, flexDirection: 'row' }}>
                                             {calculateStars(element.rating)}
                                         </View>
-                                        <Text style={{ fontSize: 16, color: '#393939' }}>
+                                        <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 16, color: '#393939' }}>
                                             {`(${element.user_ratings_total})`}
                                         </Text>
                                     </View>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Image, ScrollView, Text, TouchableOpacity, TouchableHighlight, Linking, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFonts } from 'expo-font';
 import Star from '../icons/08-star.png';
 const screenWidth = Dimensions.get('window').width;
 const AttractionDetails = ({ route }) => {
@@ -81,33 +82,40 @@ const AttractionDetails = ({ route }) => {
     useEffect(() => {
         getAttractionDetails(place_id);
     }, [])
+    const [fontsLoaded] = useFonts({
+        'Poppins-Regular': require('../fonts/Poppins-Regular.ttf'),
+        'Poppins-Bold': require('../fonts/Poppins-Bold.ttf'),
+    });
+    if (!fontsLoaded) {
+        return null;
+    }
     return (
         <View style={{ backgroundColor: '#f2fbfc', height: '100%' }}>
             <ScrollView>
-                <Text style={{ fontSize: 18, fontWeight: '900', padding: 20, textAlign: 'center' }}>
+                <Text style={{ fontFamily: 'Poppins-Bold', fontSize: 18, padding: 20, textAlign: 'center' }}>
                     {name}
                 </Text>
                 <View style={{ left: '40%', width: '20%', paddingTop: 5, paddingBottom: 5, paddingLeft: 10, paddingRight: 10, backgroundColor: openNow ? 'green' : 'red', borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}>
-                    <Text style={{ fontWeight: '900', fontSize: 15, textAlign: 'center', color: 'white' }}>
+                    <Text style={{ fontFamily: 'Poppins-Bold', fontSize: 15, textAlign: 'center', color: 'white' }}>
                         {openNow === true ? "Open" : "Closed"}
                     </Text>
                 </View>
                 <View style={{ fontSize: 14, padding: 20, textAlign: 'center' }}>
-                    <Text style={{ fontSize: 15, color: '#393939', textAlign: 'center' }}>Place Rating</Text>
+                    <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 15, color: '#393939', textAlign: 'center' }}>Place Rating</Text>
                     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', padding: 8, borderTopWidth: 2, borderColor: '#f2f2f2' }}>
-                        <Text style={{ fontSize: 16, color: '#393939' }}>
+                        <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 16, color: '#393939' }}>
                             {rating}
                         </Text>
                         <View style={{ flex: 1, flexDirection: 'row' }}>
                             {calculateStars(rating)}
                         </View>
-                        <Text style={{ fontSize: 16, color: '#393939' }}>
+                        <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 16, color: '#393939' }}>
                             {`(${totalUserRanking})`}
                         </Text>
                     </View>
                     {showInfo && <View style={{ backgroundColor: 'white', padding: 20, width: screenWidth, height: 120 }}>
                         <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                            <Text style={{ fontSize: 16, color: 'red', textAlign: 'center', paddingBottom: 20 }}>
+                            <Text style={{ fontFamily: 'Poppins-Bold', fontSize: 16, color: 'red', textAlign: 'center', paddingBottom: 20 }}>
                                 There is no information available!!!
                             </Text>
                             <TouchableHighlight onPress={() => setShowInfo(false)}>
@@ -115,11 +123,11 @@ const AttractionDetails = ({ route }) => {
                             </TouchableHighlight>
                         </View>
                     </View>}
-                    <Text style={{ paddingTop: 10, fontSize: 18, fontWeight: 'bold' }}>
+                    <Text style={{ paddingTop: 10, fontFamily: 'Poppins-Bold', fontSize: 18 }}>
                         Working hours:
                     </Text>
                     <View>
-                        {weekDayText?.toString().split(',').map((step, index) => <View key={index} style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, paddingTop: 8, paddingBottom: 8 }}><Text>{step.split(': ')[0]}</Text><Text>{step.split(': ')[1]}</Text></View>)}
+                        {weekDayText?.toString().split(',').map((step, index) => <View key={index} style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, paddingTop: 8, paddingBottom: 8 }}><Text style={{ fontFamily: 'Poppins-Regular' }}>{step.split(': ')[0]}</Text><Text style={{ fontFamily: 'Poppins-Regular' }}>{step.split(': ')[1]}</Text></View>)}
                     </View>
                     <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
                         <TouchableOpacity onPress={() => { Linking.openURL(`${url}`) }}>
@@ -134,7 +142,7 @@ const AttractionDetails = ({ route }) => {
                                     borderRadius: 30
                                 }}
                                 colors={['#E0038C', '#6A2B90']}>
-                                <Text style={{ color: 'white', fontWeight: '700' }}>Find on Maps</Text>
+                                <Text style={{ color: 'white', fontFamily: 'Poppins-Bold' }}>Find on Maps</Text>
                             </LinearGradient>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => { Linking.openURL(`tel:${phoneNumber}`) }}>
@@ -149,7 +157,7 @@ const AttractionDetails = ({ route }) => {
                                     borderRadius: 30
                                 }}
                                 colors={['#E0038C', '#6A2B90']}>
-                                <Text style={{ color: 'white', fontWeight: '700' }}>
+                                <Text style={{ color: 'white', fontFamily: 'Poppins-Bold' }}>
                                     Call
                                 </Text>
                             </LinearGradient>
@@ -175,7 +183,7 @@ const AttractionDetails = ({ route }) => {
                                 borderRadius: 30
                             }}
                             colors={['#E0038C', '#6A2B90']}>
-                            <Text style={{ color: 'white', fontWeight: '700' }}>
+                            <Text style={{ color: 'white', fontFamily: 'Poppins-Bold' }}>
                                 Visit Website
                             </Text>
                         </LinearGradient>

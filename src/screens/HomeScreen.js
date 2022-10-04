@@ -117,22 +117,22 @@ const HomeScreen = ({ navigation }) => {
             console.error(error);
         }
     }
-    // const clearLocalStorage = async () => {
-    //     try {
-    //         await AsyncStorage.clear()
-    //     } catch (e) {
-    //         // clear error
-    //     }
-    //     console.log('Done.')
-    // }
+    const clearLocalStorage = async () => {
+        try {
+            await AsyncStorage.clear()
+        } catch (e) {
+            // clear error
+        }
+        console.log('Done.')
+    }
     return isLoading === false ? (
         <View style={{ paddingTop: Platform.OS === 'android' ? 0 : 0 }}>
             <ScrollView>
-                {/* <TouchableOpacity onPress={clearLocalStorage}>
-                    <Text>
+                <TouchableOpacity onPress={clearLocalStorage}>
+                    <Text style={{ color: 'red', padding: 20 }}>
                         CLEAR LOCAL STORAGE
                     </Text>
-                </TouchableOpacity> */}
+                </TouchableOpacity>
                 <View style={styles.container}>
                     {images.map((element, index, arr) => {
                         return (
@@ -162,17 +162,18 @@ const HomeScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1, flexDirection: 'row', flexWrap: 'wrap'
+        flex: 1, flexDirection: 'row', flexWrap: 'wrap', backgroundColor: '#f2fbfc'
     },
     dateTitle: {
         flexBasis: screenWidth,
         height: 40,
-        paddingTop: 8,
+        padding: 8,
         fontSize: 20,
         fontWeight: 'bold'
     },
     images: {
-        height: screenWidth / 3, width: screenWidth / 3
+        height: screenWidth / 3 - 8, width: screenWidth / 3 - 8,
+        borderRadius: 30, marginLeft: 8
     },
     activityIndicator: {
         flex: 1,
