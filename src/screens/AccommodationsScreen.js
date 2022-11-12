@@ -5,7 +5,7 @@ import AccommodationBackground from '../icons/33-accomodations-background.png';
 import Star from '../icons/08-star.png';
 const screenWidth = Dimensions.get('window').width;
 const AccommodationScreen = ({ route, navigation }) => {
-    const GoogleMapsAPIKey = 'AIzaSyDoHOPQn79uYEHsJZ_1pRimuX1e_ZACNdg';
+    const GoogleMapsAPIKey = 'AIzaSyBU4bjZbr_wzt3_UPTfIj-WHjoqf_7orOA';
     const latitude = route.params.latitude;
     const longitude = route.params.longitude;
     const [accommodationPlaces, setAccommodationPlaces] = useState([]);
@@ -98,7 +98,7 @@ const AccommodationScreen = ({ route, navigation }) => {
                 }));
                 return;
             }
-            fetch('https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=' + item.photos[0].photo_reference + '&key=AIzaSyDoHOPQn79uYEHsJZ_1pRimuX1e_ZACNdg')
+            fetch('https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=' + item.photos[0].photo_reference + '&key=AIzaSyBU4bjZbr_wzt3_UPTfIj-WHjoqf_7orOA')
                 .then((response) => response.blob())
                 .then((blob) => {
                     let base64data;

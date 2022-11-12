@@ -23,7 +23,7 @@ import Close from '../icons/05-close.png';
 const screenWidth = Dimensions.get('window').width;
 
 const InfoScreen = ({ route, navigation }) => {
-    const GoogleMapsAPIKey = 'AIzaSyDoHOPQn79uYEHsJZ_1pRimuX1e_ZACNdg';
+    const GoogleMapsAPIKey = 'AIzaSyBU4bjZbr_wzt3_UPTfIj-WHjoqf_7orOA';
     const itemId = route.params.itemId;
     const uri = route.params.uri;
     const place = route.params.place;
@@ -35,12 +35,14 @@ const InfoScreen = ({ route, navigation }) => {
     // const [locationState, setLocationState] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
     const [showPhotos, setShowPhotos] = useState(false);
-
+    const [wLocation, setWlocation] = useState("");
+    const [wTime, setWtime] = useState("");
+    const [wIcon, setWicon] = useState(null);
     const [website, setWebsite] = useState("");
     const [url, setUrl] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [photos, setPhotos] = useState([]);
-    const [title, setTitle] = useState("");
+    const [temp, setTemp] = useState("");
     const [condition, setCondition] = useState("");
     const [showWeather, setShowWeather] = useState(false)
     const [selected, setSelected] = useState([true, false, false, false, false, false, false, false, false, false]);
@@ -65,13 +67,17 @@ const InfoScreen = ({ route, navigation }) => {
         }
     }
     const getWeatherInfo = async (longitude, latitude) => {
-        fetch(`http://api.weatherapi.com/v1/current.json?q=${latitude},${longitude}&key=0c7f09328bdf41579f6140115221709`)
+        fetch(`http://api.weatherapi.com/v1/current.json?q=${latitude},${longitude}&key=c394ebe8ffb149e9a71114726220311`)
             .then((response) => response.json())
             .then((json) => {
-                setTitle(
+                setTemp(
                     json.current.temp_c
                 );
-                setCondition(json.current?.condition.text)
+                setCondition(json.current?.condition?.text)
+                setWlocation(`${json.location?.name}, ${json.location?.region}`)
+                setWtime(json.location?.localtime)
+                let wicon = "https://" + json.current?.condition?.icon.slice(2)
+                setWicon(wicon)
                 console.log("CURENT TEMP", json.current.temp_c)
             }).catch((error) => {
                 console.error(error);
@@ -81,18 +87,13 @@ const InfoScreen = ({ route, navigation }) => {
         //SplashScreen.preventAutoHideAsync();
         navigation.setOptions({ headerShown: false, tabBarVisible: false });
         getLocationInfo(place_id)
-        // getWeatherInfo(longitude, latitude)
-        console.log("place ID ", place_id, longitude, latitude, title, website);
+        getWeatherInfo(longitude, latitude)
+        console.log("place ID ", place_id, longitude, latitude, website, wIcon);
     }, []);
     const [fontsLoaded] = useFonts({
         'Poppins-Regular': require('../fonts/Poppins-Regular.ttf'),
         'Poppins-Bold': require('../fonts/Poppins-Bold.ttf'),
     });
-    // const onLayoutRootView = useCallback(async () => {
-    //     if (fontsLoaded) {
-    //         await SplashScreen.hideAsync();
-    //     }
-    // }, [fontsLoaded]);
     if (!fontsLoaded) {
         return null;
     }
@@ -100,20 +101,31 @@ const InfoScreen = ({ route, navigation }) => {
         <ImageBackground source={{ uri: uri }} style={{ flex: 1, width: 'auto', height: 'auto' }}>
             <View style={styles.container} >
                 {showWeather && (
-                    <View style={{ flex: 0.59, alignItems: 'center', }}>
-                        <Text style={{ fontSize: 18 }}>
-                            Temperature: {title} C
-                        </Text>
-                        <Text style={{ fontSize: 16 }}>
-                            Weather condition: {condition}
-                        </Text>
+                    <View style={{ flex: 0.59 }}>
+                        <View style={{ backgroundColor: 'white', alignItems: 'center', width: '60%', marginLeft: '20%', paddingTop: 20, paddingBottom: 20, borderRadius: 25 }}>
+                            <Text style={{ fontSize: 18, textAlign: 'center' }}>
+                                {wLocation}
+                            </Text>
+                            <Text style={{ fontSize: 50, textAlign: 'center' }}>
+                                {temp}°
+                            </Text>
+                            <View>
+                                <Text style={{ fontSize: 16, textAlign: 'center' }}>
+                                    {condition}
+                                </Text>
+                                <Image source={{ uri: `${wIcon}` }} style={{ height: 80, width: 80 }} />
+                            </View>
+                            <Text style={{ fontSize: 16, textAlign: 'center' }}>
+                                {wTime}
+                            </Text>
+                        </View>
                     </View>
                 )}
                 {showPhotos && (
                     <View style={{ flex: 0.69, alignItems: 'center', }}>
                         <ScrollView horizontal >
                             {photos.map((item) => {
-                                { console.log("Photo refere", item?.photo_reference) }
+                                { console.log("Photo refere", item) }
                                 return (
                                     <View>
                                         {/* <Text style={{ color: 'yellow' }}>
@@ -161,6 +173,7 @@ const InfoScreen = ({ route, navigation }) => {
                             </TouchableWithoutFeedback>
                             <TouchableWithoutFeedback onPress={() => {
                                 setSelected([false, true, false, false, false, false, false, false, false, false])
+                                setShowWeather(false)
                                 Linking.canOpenURL(`${website}`).then(supported => {
                                     if (supported) {
                                         Linking.openURL(`${website}`)
@@ -178,6 +191,7 @@ const InfoScreen = ({ route, navigation }) => {
                             </TouchableWithoutFeedback>
                             <TouchableWithoutFeedback onPress={() => {
                                 setSelected([false, false, true, false, false, false, false, false, false, false])
+                                setShowWeather(false)
                                 Linking.canOpenURL(`${url}`).then(supported => {
                                     if (supported) {
                                         Linking.openURL(`${url}`)
@@ -195,6 +209,7 @@ const InfoScreen = ({ route, navigation }) => {
                             </TouchableWithoutFeedback>
                             <TouchableWithoutFeedback onPress={() => {
                                 setSelected([false, false, false, true, false, false, false, false, false, false])
+                                setShowWeather(false)
                                 phoneNumber == "undefined" ? setShowInfo(true) : Linking.openURL(`tel:${phoneNumber}`)
                             }}>
                                 <View style={styles.buttonView}>
@@ -207,6 +222,7 @@ const InfoScreen = ({ route, navigation }) => {
                             <TouchableWithoutFeedback onPress={() => {
                                 setSelected([false, false, false, false, true, false, false, false, false, false])
                                 setShowWeather(true)
+                                //setShowPhotos(false)
                             }}>
                                 <View style={styles.buttonView}>
                                     <Image source={selected[4] ? WeatherSel : Weather} style={{ height: iconWidth, width: iconWidth }} />
@@ -217,7 +233,8 @@ const InfoScreen = ({ route, navigation }) => {
                             </TouchableWithoutFeedback>
                             <TouchableWithoutFeedback onPress={() => {
                                 setSelected([false, false, false, false, false, true, false, false, false, false])
-                                setShowPhotos(true)
+                                setShowWeather(false)
+                                //setShowPhotos(true)
                             }}>
                                 <View style={styles.buttonView}>
                                     <Image source={selected[5] ? PhotosSel : Photos} style={{ height: iconWidth, width: iconWidth }} />
@@ -254,7 +271,7 @@ const InfoScreen = ({ route, navigation }) => {
                                 }}>
                                     <Image source={selected[7] ? AccomodationsSel : Accomodations} style={{ height: iconWidth, width: iconWidth }} />
                                     <Text style={{ fontFamily: selected[7] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
-                                        Accommodations
+                                        B&B
                                     </Text>
                                 </View>
                             </TouchableWithoutFeedback>
@@ -314,13 +331,6 @@ const styles = StyleSheet.create({
         padding: 10,
         justifyContent: 'center',
         alignItems: 'center'
-    },
-    buttonText: {
-        textAlign: 'center',
-        color: '#666',
-        fontSize: 15, fontWeight: '500',
-        color: 'rgba(178,178,178,1)',
-        padding: 5
     }
 });
 export default InfoScreen;

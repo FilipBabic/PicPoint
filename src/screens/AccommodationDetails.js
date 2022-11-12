@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, ScrollView, Text, TouchableOpacity, TouchableHighlight, Linking, Dimensions } from 'react-native';
+import { View, Image, ScrollView, Text, TouchableWithoutFeedback, TouchableHighlight, Linking, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import Star from '../icons/08-star.png';
+import Website from '../icons/13-website-selected.png';
+import Location from '../icons/14-location-selected.png';
+import Phone from '../icons/16-phone-selected.png';
 const screenWidth = Dimensions.get('window').width;
 const AccommodationDetails = ({ route }) => {
-    const GoogleMapsAPIKey = 'AIzaSyDoHOPQn79uYEHsJZ_1pRimuX1e_ZACNdg';
+    const GoogleMapsAPIKey = 'AIzaSyBU4bjZbr_wzt3_UPTfIj-WHjoqf_7orOA';
     const place_id = route.params.place_id;
     const [showInfo, setShowInfo] = useState(false);
     const [phoneNumber, setPhoneNumber] = useState("");
@@ -129,65 +132,34 @@ const AccommodationDetails = ({ route }) => {
                     <View>
                         {weekDayText?.toString().split(',').map((step, index) => <View key={index} style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, paddingTop: 8, paddingBottom: 8 }}><Text style={{ fontFamily: 'Poppins-Regular' }}>{step.split(': ')[0]}</Text><Text style={{ fontFamily: 'Poppins-Regular' }}>{step.split(': ')[1]}</Text></View>)}
                     </View>
-                    <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <TouchableOpacity onPress={() => { Linking.openURL(`${url}`) }}>
-                            <LinearGradient
-                                style={{
-                                    marginTop: 20,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    backgroundColor: '#EB00A0',
-                                    height: 40,
-                                    width: screenWidth / 2 - 25,
-                                    borderRadius: 30
-                                }}
-                                colors={['#E0038C', '#6A2B90']}>
-                                <Text style={{ color: 'white', fontFamily: 'Poppins-Bold' }}>Find on Maps</Text>
-                            </LinearGradient>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => { Linking.openURL(`tel:${phoneNumber}`) }}>
-                            <LinearGradient
-                                style={{
-                                    marginTop: 20,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    backgroundColor: '#EB00A0',
-                                    height: 40,
-                                    width: screenWidth / 2 - 25,
-                                    borderRadius: 30
-                                }}
-                                colors={['#E0038C', '#6A2B90']}>
-                                <Text style={{ color: 'white', fontFamily: 'Poppins-Bold' }}>
-                                    Call
-                                </Text>
-                            </LinearGradient>
-                        </TouchableOpacity>
+                    <View style={{ flex: 1, marginTop: 10, flexDirection: 'row', justifyContent: 'center' }}>
+                        <View>
+                            <TouchableWithoutFeedback onPress={() => {
+                                Linking.canOpenURL(`${website}`).then(supported => {
+                                    if (supported) {
+                                        Linking.openURL(`${website}`)
+                                    } else {
+                                        setShowInfo(true);
+                                    }
+                                })
+                            }}>
+                                <Image source={Website} style={{ height: 90, width: 90 }} />
+                            </TouchableWithoutFeedback>
+                            <Text style={{ textAlign: 'center', fontFamily: 'Poppins-Bold', color: '#393939' }}>Website</Text>
+                        </View>
+                        <View>
+                            <TouchableWithoutFeedback onPress={() => { Linking.openURL(`${url}`) }}>
+                                <Image source={Location} style={{ height: 90, width: 90 }} />
+                            </TouchableWithoutFeedback>
+                            <Text style={{ textAlign: 'center', fontFamily: 'Poppins-Bold', color: '#393939' }}>Location</Text>
+                        </View>
+                        <View>
+                            <TouchableWithoutFeedback onPress={() => { Linking.openURL(`tel:${phoneNumber}`) }}>
+                                <Image source={Phone} style={{ height: 90, width: 90 }} />
+                            </TouchableWithoutFeedback>
+                            <Text style={{ textAlign: 'center', fontFamily: 'Poppins-Bold', color: '#393939' }}>Phone</Text>
+                        </View>
                     </View>
-                    <TouchableOpacity onPress={() => {
-                        Linking.canOpenURL(`${website}`).then(supported => {
-                            if (supported) {
-                                Linking.openURL(`${website}`)
-                            } else {
-                                setShowInfo(true);
-                            }
-                        })
-                    }}>
-                        <LinearGradient
-                            style={{
-                                marginTop: 20,
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                backgroundColor: '#EB00A0',
-                                height: 40,
-                                width: '100%',
-                                borderRadius: 30
-                            }}
-                            colors={['#E0038C', '#6A2B90']}>
-                            <Text style={{ color: 'white', fontFamily: 'Poppins-Bold' }}>
-                                Visit Website
-                            </Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
                 </View>
             </ScrollView>
         </View>

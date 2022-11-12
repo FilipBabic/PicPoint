@@ -1,5 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Image } from 'react-native';
+import { useFonts } from 'expo-font';
 import InfoScreen from '../screens/InfoScreen';
 import NotesScreen from '../screens/NotesScreen';
 import Info from '../icons/06-info.png';
@@ -11,12 +12,19 @@ const Tab = createBottomTabNavigator();
 const Tabs = ({ route }) => {
     const { itemId, place, uri, place_id, longitude, latitude } = route.params;
     console.log("ROUTE PARAMS", itemId, place);
+    const [fontsLoaded] = useFonts({
+        'Poppins-Regular': require('../fonts/Poppins-Regular.ttf'),
+        'Poppins-Bold': require('../fonts/Poppins-Bold.ttf'),
+    });
+    if (!fontsLoaded) {
+        return null;
+    }
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
                 tabBarLabelPosition: 'beside-icon',
                 tabBarLabelStyle: {
-                    fontWeight: '600',
+                    fontFamily: 'Poppins-Regular',
                     fontSize: 17
                 },
                 tabBarActiveTintColor: '#393939',

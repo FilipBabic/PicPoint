@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, ScrollView, View, Dimensions, ImageBackground, Image, TouchableWithoutFeedback, TouchableOpacity, Text, TextInput, ActivityIndicator, FlatList } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import EditIcon from '../icons/02-edit-white.png';
+import EditIcon from '../icons/02-edit-dark.png';
 import EditGrayIcon from '../icons/03-edit-silver.png';
 import InfoButton from '../icons/01-home.png';
 import ShareIcon from '../icons/10-share.png';
@@ -15,7 +15,7 @@ let customFonts = {
 };
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
-const GoogleMapsAPIKey = 'AIzaSyDoHOPQn79uYEHsJZ_1pRimuX1e_ZACNdg';
+const GoogleMapsAPIKey = 'AIzaSyBU4bjZbr_wzt3_UPTfIj-WHjoqf_7orOA';
 class Photo extends React.PureComponent {
     constructor(props) {
         super(props);
@@ -90,7 +90,7 @@ class Photo extends React.PureComponent {
             return null;
         }
         return (
-            <View style={{ marginTop: 0, justifyContent: 'center', backgroundColor: 'black', width: screenWidth, height: screenHeight }}>
+            <View style={{ marginTop: 0, justifyContent: 'center', backgroundColor: 'white', width: screenWidth, height: screenHeight }}>
                 <ImageBackground source={{ uri: this.props.item.uri }} style={{ width: screenWidth, aspectRatio: calculateAspectRatio() }} />
                 {this.state.isViewed === "yes" && (
                     <View style={{
@@ -144,23 +144,27 @@ class Photo extends React.PureComponent {
                         width: '90%',
                         backgroundColor: 'white',
                         marginLeft: '5%',
+                        borderWidth: 1,
+                        borderColor: "#c8c8c8",
                         borderRadius: 30
-                    }}><ScrollView ref={this.scrollRef}>
+                    }}>
+                        <Text style={{
+                            marginTop: 10,
+                            paddingTop: 15,
+                            paddingBottom: 15,
+                            textAlign: 'center',
+                            fontSize: 20, fontFamily: 'Poppins-Bold',
+                            color: '#3d3d3d'
+                        }}>
+                            Pick a place for your photo</Text>
+                        <ScrollView ref={this.scrollRef}>
                             <LinearGradient
                                 style={{
                                     borderTopLeftRadius: 30,
                                     borderTopRightRadius: 30
                                 }}
                                 colors={['white', '#f1f1f1']}>
-                                <Text style={{
-                                    marginTop: 10,
-                                    paddingTop: 15,
-                                    paddingBottom: 15,
-                                    textAlign: 'center',
-                                    fontSize: 20, fontFamily: 'Poppins-Bold',
-                                    color: '#3d3d3d'
-                                }}>
-                                    Pick a place for your photo</Text>
+
                                 <View style={{
                                     flex: 1,
                                     flexDirection: 'row',
@@ -276,7 +280,7 @@ class Photo extends React.PureComponent {
                         width: '100%',
                         backgroundColor: 'transparent'
                     }}>
-                        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', marginBottom: 35 }}>
+                        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', marginBottom: 45 }}>
                             <TouchableOpacity onPress={() => {
                                 this.props.navigation.navigate('Information', {
                                     itemId: this.props.item.id,
@@ -294,7 +298,7 @@ class Photo extends React.PureComponent {
                             flex: 1,
                             flexDirection: 'row',
                             justifyContent: 'center',
-                            backgroundColor: 'black'
+                            backgroundColor: 'white'
                         }}>
                             <TouchableOpacity onPress={() => {
                                 this.setState({ isViewed: "no" })
@@ -314,7 +318,7 @@ class Photo extends React.PureComponent {
                                 padding: 12,
                                 fontSize: 17,
                                 fontFamily: 'Poppins-Regular',
-                                color: 'white'
+                                color: '#393939'
                             }}>
                                 {this.state.title}
                             </Text>

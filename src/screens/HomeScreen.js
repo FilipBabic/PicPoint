@@ -6,7 +6,7 @@ import * as MediaLibrary from 'expo-media-library';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const screenWidth = Dimensions.get('window').width;
 const HomeScreen = ({ navigation }) => {
-    const GoogleMapsAPIKey = 'AIzaSyDoHOPQn79uYEHsJZ_1pRimuX1e_ZACNdg';
+    const GoogleMapsAPIKey = 'AIzaSyBU4bjZbr_wzt3_UPTfIj-WHjoqf_7orOA';
     const [isLoading, setIsLoading] = useState(true);
     const headerHeight = useHeaderHeight();
     const [images, setImages] = useState([{ test: 'bla' }, { test: 'bl3' }, { test: 'bl3' }]);
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     },
     images: {
         height: screenWidth / 3 - 8, width: screenWidth / 3 - 8,
-        borderRadius: 30, marginLeft: 8
+        borderRadius: 30, marginLeft: 6
     },
     activityIndicator: {
         flex: 1,
