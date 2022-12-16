@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Dimensions, Image, View, Text, Linking, ImageBackground, TouchableWithoutFeedback, TouchableHighlight, ScrollView, StyleSheet } from 'react-native';
+import { Dimensions, Keyboard, Image, View, Text, TextInput, Linking, ImageBackground, TouchableWithoutFeedback, TouchableHighlight, ScrollView, StyleSheet } from 'react-native';
 import { useFonts } from 'expo-font';
+import { LinearGradient } from 'expo-linear-gradient';
 import About from '../icons/10-about.png';
 import AboutSel from '../icons/11-about-selected.png';
 import Website from '../icons/12-website.png';
@@ -20,6 +21,7 @@ import AccomodationsSel from '../icons/24-accommodations-sel.png';
 import Food from '../icons/25-food.png';
 import FoodSel from '../icons/26-food-selected.png';
 import Close from '../icons/05-close.png';
+import EditIcon from '../icons/02-edit-dark.png'
 const screenWidth = Dimensions.get('window').width;
 
 const InfoScreen = ({ route, navigation }) => {
@@ -35,6 +37,8 @@ const InfoScreen = ({ route, navigation }) => {
     // const [locationState, setLocationState] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
     const [showPhotos, setShowPhotos] = useState(false);
+    const [showAbout, setShowAbout] = useState(false);
+    const [aboutText, setAboutText] = useState("")
     const [wLocation, setWlocation] = useState("");
     const [wTime, setWtime] = useState("");
     const [wIcon, setWicon] = useState(null);
@@ -45,7 +49,7 @@ const InfoScreen = ({ route, navigation }) => {
     const [temp, setTemp] = useState("");
     const [condition, setCondition] = useState("");
     const [showWeather, setShowWeather] = useState(false)
-    const [selected, setSelected] = useState([true, false, false, false, false, false, false, false, false, false]);
+    const [selected, setSelected] = useState([false, false, false, false, false, false, false, false, false, false]);
     const getLocationInfo = async (place_id) => {
         try {
             const response = await fetch('https://maps.googleapis.com/maps/api/place/details/json?fields=international_phone_number%2Curl%2Cwebsite%2Cphotos&place_id=' + place_id + '&key=' + GoogleMapsAPIKey);
@@ -67,7 +71,7 @@ const InfoScreen = ({ route, navigation }) => {
         }
     }
     const getWeatherInfo = async (longitude, latitude) => {
-        fetch(`http://api.weatherapi.com/v1/current.json?q=${latitude},${longitude}&key=c394ebe8ffb149e9a71114726220311`)
+        fetch(`http://api.weatherapi.com/v1/current.json?q=${latitude},${longitude}&key=d1026a1d4a9144eeb91165513221512`)
             .then((response) => response.json())
             .then((json) => {
                 setTemp(
@@ -99,200 +103,243 @@ const InfoScreen = ({ route, navigation }) => {
     }
     return (
         <ImageBackground source={{ uri: uri }} style={{ flex: 1, width: 'auto', height: 'auto' }}>
-            <View style={styles.container} >
-                {showWeather && (
-                    <View style={{ flex: 0.59 }}>
-                        <View style={{ backgroundColor: 'white', alignItems: 'center', width: '60%', marginLeft: '20%', paddingTop: 20, paddingBottom: 20, borderRadius: 25 }}>
-                            <Text style={{ fontSize: 18, textAlign: 'center' }}>
-                                {wLocation}
-                            </Text>
-                            <Text style={{ fontSize: 50, textAlign: 'center' }}>
-                                {temp}°
-                            </Text>
-                            <View>
-                                <Text style={{ fontSize: 16, textAlign: 'center' }}>
-                                    {condition}
-                                </Text>
-                                <Image source={{ uri: `${wIcon}` }} style={{ height: 80, width: 80 }} />
-                            </View>
-                            <Text style={{ fontSize: 16, textAlign: 'center' }}>
-                                {wTime}
-                            </Text>
+            <TouchableWithoutFeedback onPress={() => { Keyboard.dismiss() }}>
+                <View style={styles.container} >
+                    {showAbout && (
+                        <View style={{ flex: 0.59, marginLeft: '10%', marginRight: '10%' }}>
+                            {/* <TouchableWithoutFeedback onPress={() => {
+
+                        }}>
+                            <Image source={EditIcon} style={{
+                                backgroundColor: 'white',
+                                height: 20,
+                                width: 20,
+                                marginLeft: 12
+                            }} title="Info Button" />
+                        </TouchableWithoutFeedback> */}
+                            <TextInput
+                                style={{
+                                    borderWidth: 1,
+                                    borderRadius: 25,
+                                    backgroundColor: 'white',
+                                    padding: 8,
+                                    fontSize: 18,
+                                    fontFamily: 'Poppins-Regular',
+                                    color: '#3d3d3d'
+                                }}
+                                onChangeText={(text) => setAboutText(text)}
+                                value={aboutText}
+                                textAlign={'center'}
+                                multiline={true}
+                                placeholder="Enter Photo Hint"
+                                placeholderTextColor="rgba(178,178,178,1)"
+                                keyboardType="default"
+                            />
                         </View>
-                    </View>
-                )}
-                {showPhotos && (
-                    <View style={{ flex: 0.69, alignItems: 'center', }}>
-                        <ScrollView horizontal >
-                            {photos.map((item) => {
-                                { console.log("Photo refere", item) }
-                                return (
-                                    <View>
-                                        {/* <Text style={{ color: 'yellow' }}>
+                    )}
+                    {showWeather && (
+                        <View style={{ flex: 0.59 }}>
+                            <View style={{ backgroundColor: 'white', alignItems: 'center', width: '60%', marginLeft: '20%', paddingTop: 20, paddingBottom: 20, borderRadius: 25 }}>
+                                <Text style={{ fontSize: 18, textAlign: 'center' }}>
+                                    {wLocation}
+                                </Text>
+                                <Text style={{ fontSize: 50, textAlign: 'center' }}>
+                                    {temp}°
+                                </Text>
+                                <View style={{ alignItems: 'center' }}>
+                                    <Text style={{ fontSize: 16, textAlign: 'center' }}>
+                                        {condition}
+                                    </Text>
+                                    <Image source={{ uri: `${wIcon}` }} style={{ height: 80, width: 80 }} />
+                                </View>
+                                <Text style={{ fontSize: 16, textAlign: 'center' }}>
+                                    {wTime}
+                                </Text>
+                            </View>
+                        </View>
+                    )}
+                    {showPhotos && (
+                        <View style={{ flex: 0.69, alignItems: 'center', }}>
+                            <ScrollView horizontal >
+                                {photos.map((item) => {
+                                    { console.log("Photo refere", item) }
+                                    return (
+                                        <View>
+                                            {/* <Text style={{ color: 'yellow' }}>
                                         {item.photo_reference}
                                         zzz
                                     </Text> */}
-                                        <Image source={About} style={{ width: screenWidth, height: screenWidth }} />
-                                    </View>
-                                )
-                            })}
-                        </ScrollView>
-                    </View>
-                )}
-                {showInfo && <View style={{ position: 'absolute', top: 150, backgroundColor: 'white', padding: 20, width: screenWidth, height: 120 }}>
-                    <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <Text style={{ fontFamily: 'Poppins-Bold', fontSize: 16, textAlign: 'center', paddingBottom: 20 }}>
-                            There is no information available!!!
+                                            <Image source={About} style={{ width: screenWidth, height: screenWidth }} />
+                                        </View>
+                                    )
+                                })}
+                            </ScrollView>
+                        </View>
+                    )}
+                    {showInfo && <View style={{ position: 'absolute', top: 150, backgroundColor: 'white', padding: 20, width: screenWidth, height: 120 }}>
+                        <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                            <Text style={{ fontFamily: 'Poppins-Bold', fontSize: 16, textAlign: 'center', paddingBottom: 20 }}>
+                                There is no information available!!!
+                            </Text>
+                            <TouchableHighlight onPress={() => setShowInfo(false)}>
+                                <Text style={{ height: 40, width: 100, textAlign: 'center', paddingTop: 8, fontSize: 20, backgroundColor: '#162b54', color: 'white' }}>OK</Text>
+                            </TouchableHighlight>
+                        </View>
+                    </View>}
+                    <View style={styles.bottomContainer}>
+                        <TouchableWithoutFeedback onPress={() => {
+                            navigation.goBack();
+                        }} >
+                            <Image source={Close} style={styles.closeButton} />
+                        </TouchableWithoutFeedback>
+                        <Text style={[styles.title, { fontFamily: 'Poppins-Bold' }]}>
+                            {place}
                         </Text>
-                        <TouchableHighlight onPress={() => setShowInfo(false)}>
-                            <Text style={{ height: 40, width: 100, textAlign: 'center', paddingTop: 8, fontSize: 20, backgroundColor: '#162b54', color: 'white' }}>OK</Text>
-                        </TouchableHighlight>
-                    </View>
-                </View>}
-                <View style={styles.bottomContainer}>
-                    <TouchableWithoutFeedback onPress={() => {
-                        navigation.goBack();
-                    }} >
-                        <Image source={Close} style={styles.closeButton} />
-                    </TouchableWithoutFeedback>
-                    <Text style={[styles.title, { fontFamily: 'Poppins-Bold' }]}>
-                        {place}
-                    </Text>
-                    <View style={{ flex: 1 }}>
-                        <ScrollView ref={scrollViewRef} contentContainerStyle={styles.menu} horizontal={true}>
-                            <TouchableWithoutFeedback onPress={() => {
-                                setSelected([true, false, false, false, false, false, false, false, false, false])
-                                setShowWeather(false)
-                            }}>
-                                <View style={styles.buttonView}>
-                                    <Image source={selected[0] ? AboutSel : About} style={{ height: iconWidth, width: iconWidth }} />
-                                    <Text style={{ fontFamily: selected[0] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
-                                        About
-                                    </Text>
-                                </View>
-                            </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={() => {
-                                setSelected([false, true, false, false, false, false, false, false, false, false])
-                                setShowWeather(false)
-                                Linking.canOpenURL(`${website}`).then(supported => {
-                                    if (supported) {
-                                        Linking.openURL(`${website}`)
-                                    } else {
-                                        setShowInfo(true);
-                                    }
-                                })
-                            }}>
-                                <View style={styles.buttonView}>
-                                    <Image source={selected[1] ? WebsiteSel : Website} style={{ height: iconWidth, width: iconWidth }} />
-                                    <Text style={{ fontFamily: selected[1] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
-                                        Website
-                                    </Text>
-                                </View>
-                            </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={() => {
-                                setSelected([false, false, true, false, false, false, false, false, false, false])
-                                setShowWeather(false)
-                                Linking.canOpenURL(`${url}`).then(supported => {
-                                    if (supported) {
-                                        Linking.openURL(`${url}`)
-                                    } else {
-                                        setShowInfo(true);
-                                    }
-                                })
-                            }}>
-                                <View style={styles.buttonView}>
-                                    <Image source={selected[2] ? LocationSel : Location} style={{ height: iconWidth, width: iconWidth }} />
-                                    <Text style={{ fontFamily: selected[2] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
-                                        Location
-                                    </Text>
-                                </View>
-                            </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={() => {
-                                setSelected([false, false, false, true, false, false, false, false, false, false])
-                                setShowWeather(false)
-                                phoneNumber == "undefined" ? setShowInfo(true) : Linking.openURL(`tel:${phoneNumber}`)
-                            }}>
-                                <View style={styles.buttonView}>
-                                    <Image source={selected[3] ? PhoneSel : Phone} style={{ height: iconWidth, width: iconWidth }} />
-                                    <Text style={{ fontFamily: selected[3] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
-                                        Phone
-                                    </Text>
-                                </View>
-                            </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={() => {
-                                setSelected([false, false, false, false, true, false, false, false, false, false])
-                                setShowWeather(true)
-                                //setShowPhotos(false)
-                            }}>
-                                <View style={styles.buttonView}>
-                                    <Image source={selected[4] ? WeatherSel : Weather} style={{ height: iconWidth, width: iconWidth }} />
-                                    <Text style={{ fontFamily: selected[4] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
-                                        Weather
-                                    </Text>
-                                </View>
-                            </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={() => {
-                                setSelected([false, false, false, false, false, true, false, false, false, false])
-                                setShowWeather(false)
-                                //setShowPhotos(true)
-                            }}>
-                                <View style={styles.buttonView}>
-                                    <Image source={selected[5] ? PhotosSel : Photos} style={{ height: iconWidth, width: iconWidth }} />
-                                    <Text style={{ fontFamily: selected[5] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
-                                        Photos
-                                    </Text>
-                                </View>
-                            </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={() => {
-                                setSelected([false, false, false, false, false, false, true, false, false, false])
-                                navigation.navigate('Attraction', {
-                                    latitude,
-                                    longitude
-                                });
-                            }}>
-                                <View style={{
-                                    alignItems: 'center',
+                        <View style={{ flex: 1 }}>
+                            <ScrollView ref={scrollViewRef} contentContainerStyle={styles.menu} horizontal={true}>
+                                <TouchableWithoutFeedback onPress={() => {
+                                    setSelected([true, false, false, false, false, false, false, false, false, false])
+                                    setShowWeather(false)
+                                    setShowAbout(true)
                                 }}>
-                                    <Image source={selected[6] ? AttractionsSel : Attractions} style={{ height: iconWidth, width: iconWidth }} />
-                                    <Text style={{ fontFamily: selected[6] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
-                                        Attractions
-                                    </Text>
-                                </View>
-                            </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={() => {
-                                setSelected([false, false, false, false, false, false, false, true, false, false])
-                                navigation.navigate('Accommodation', {
-                                    latitude,
-                                    longitude
-                                });
-                            }}>
-                                <View style={{
-                                    alignItems: 'center',
+                                    <View style={styles.buttonView}>
+                                        <Image source={selected[0] ? AboutSel : About} style={{ height: iconWidth, width: iconWidth }} />
+                                        <Text style={{ fontFamily: selected[0] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
+                                            About
+                                        </Text>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                                <TouchableWithoutFeedback onPress={() => {
+                                    setSelected([false, true, false, false, false, false, false, false, false, false])
+                                    setShowWeather(false)
+                                    setShowAbout(false)
+                                    Linking.canOpenURL(`${website}`).then(supported => {
+                                        if (supported) {
+                                            Linking.openURL(`${website}`)
+                                        } else {
+                                            setShowInfo(true);
+                                        }
+                                    })
                                 }}>
-                                    <Image source={selected[7] ? AccomodationsSel : Accomodations} style={{ height: iconWidth, width: iconWidth }} />
-                                    <Text style={{ fontFamily: selected[7] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
-                                        B&B
-                                    </Text>
-                                </View>
-                            </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={() => {
-                                setSelected([false, false, false, false, false, false, false, false, true, false])
-                                navigation.navigate('Food', {
-                                    latitude,
-                                    longitude
-                                });
-                            }}>
-                                <View style={styles.buttonView}>
-                                    <Image source={selected[8] ? FoodSel : Food} style={{ height: iconWidth, width: iconWidth }} />
-                                    <Text style={{ fontFamily: selected[8] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
-                                        Food
-                                    </Text>
-                                </View>
-                            </TouchableWithoutFeedback>
-                        </ScrollView>
+                                    <View style={styles.buttonView}>
+                                        <Image source={selected[1] ? WebsiteSel : Website} style={{ height: iconWidth, width: iconWidth }} />
+                                        <Text style={{ fontFamily: selected[1] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
+                                            Website
+                                        </Text>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                                <TouchableWithoutFeedback onPress={() => {
+                                    setSelected([false, false, true, false, false, false, false, false, false, false])
+                                    setShowWeather(false)
+                                    setShowAbout(false)
+                                    Linking.canOpenURL(`${url}`).then(supported => {
+                                        if (supported) {
+                                            Linking.openURL(`${url}`)
+                                        } else {
+                                            setShowInfo(true);
+                                        }
+                                    })
+                                }}>
+                                    <View style={styles.buttonView}>
+                                        <Image source={selected[2] ? LocationSel : Location} style={{ height: iconWidth, width: iconWidth }} />
+                                        <Text style={{ fontFamily: selected[2] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
+                                            Location
+                                        </Text>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                                <TouchableWithoutFeedback onPress={() => {
+                                    setSelected([false, false, false, true, false, false, false, false, false, false])
+                                    setShowWeather(false)
+                                    setShowAbout(false)
+                                    phoneNumber == "undefined" ? setShowInfo(true) : Linking.openURL(`tel:${phoneNumber}`)
+                                }}>
+                                    <View style={styles.buttonView}>
+                                        <Image source={selected[3] ? PhoneSel : Phone} style={{ height: iconWidth, width: iconWidth }} />
+                                        <Text style={{ fontFamily: selected[3] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
+                                            Phone
+                                        </Text>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                                <TouchableWithoutFeedback onPress={() => {
+                                    setSelected([false, false, false, false, true, false, false, false, false, false])
+                                    setShowWeather(true)
+                                    setShowAbout(false)
+                                    //setShowPhotos(false)
+                                }}>
+                                    <View style={styles.buttonView}>
+                                        <Image source={selected[4] ? WeatherSel : Weather} style={{ height: iconWidth, width: iconWidth }} />
+                                        <Text style={{ fontFamily: selected[4] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
+                                            Weather
+                                        </Text>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                                <TouchableWithoutFeedback onPress={() => {
+                                    setSelected([false, false, false, false, false, true, false, false, false, false])
+                                    setShowWeather(false)
+                                    setShowAbout(false)
+                                    //setShowPhotos(true)
+                                }}>
+                                    <View style={styles.buttonView}>
+                                        <Image source={selected[5] ? PhotosSel : Photos} style={{ height: iconWidth, width: iconWidth }} />
+                                        <Text style={{ fontFamily: selected[5] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
+                                            Photos
+                                        </Text>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                                <TouchableWithoutFeedback onPress={() => {
+                                    setSelected([false, false, false, false, false, false, true, false, false, false])
+                                    setShowAbout(false)
+                                    navigation.navigate('Attraction', {
+                                        latitude,
+                                        longitude
+                                    });
+                                }}>
+                                    <View style={{
+                                        alignItems: 'center',
+                                    }}>
+                                        <Image source={selected[6] ? AttractionsSel : Attractions} style={{ height: iconWidth, width: iconWidth }} />
+                                        <Text style={{ fontFamily: selected[6] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
+                                            Attractions
+                                        </Text>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                                <TouchableWithoutFeedback onPress={() => {
+                                    setSelected([false, false, false, false, false, false, false, true, false, false])
+                                    setShowAbout(false)
+                                    navigation.navigate('Accommodation', {
+                                        latitude,
+                                        longitude
+                                    });
+                                }}>
+                                    <View style={{
+                                        alignItems: 'center',
+                                    }}>
+                                        <Image source={selected[7] ? AccomodationsSel : Accomodations} style={{ height: iconWidth, width: iconWidth }} />
+                                        <Text style={{ fontFamily: selected[7] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
+                                            B&B
+                                        </Text>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                                <TouchableWithoutFeedback onPress={() => {
+                                    setSelected([false, false, false, false, false, false, false, false, true, false])
+                                    setShowAbout(false)
+                                    navigation.navigate('Food', {
+                                        latitude,
+                                        longitude
+                                    });
+                                }}>
+                                    <View style={styles.buttonView}>
+                                        <Image source={selected[8] ? FoodSel : Food} style={{ height: iconWidth, width: iconWidth }} />
+                                        <Text style={{ fontFamily: selected[8] ? 'Poppins-Bold' : 'Poppins-Regular', color: '#666666' }}>
+                                            Food
+                                        </Text>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                            </ScrollView>
+                        </View>
                     </View>
                 </View>
-            </View>
+            </TouchableWithoutFeedback>
         </ImageBackground >
     )
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, ScrollView, View, Dimensions, ImageBackground, Image, TouchableWithoutFeedback, TouchableOpacity, Text, TextInput, ActivityIndicator, FlatList } from 'react-native';
+import { StyleSheet, Share, ScrollView, View, Dimensions, ImageBackground, Image, TouchableWithoutFeedback, TouchableOpacity, Text, TextInput, ActivityIndicator, FlatList } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EditIcon from '../icons/02-edit-dark.png';
@@ -8,6 +8,7 @@ import InfoButton from '../icons/01-home.png';
 import ShareIcon from '../icons/10-share.png';
 import ArrowBack from '../icons/04-arrow-back.png';
 import * as Font from 'expo-font';
+import * as MediaLibrary from 'expo-media-library';
 
 let customFonts = {
     'Poppins-Regular': require('../fonts/Poppins-Regular.ttf'),
@@ -25,6 +26,7 @@ class Photo extends React.PureComponent {
             fontsLoaded: false,
             isLoading: false,
             bottomBar: true,
+            uri: this.props.item.uri,
             isViewed: this.props.item.isViewed,
             near_by_places: this.props.item.nearbyplaces,
             placeId: this.props.item.nearbyplaces[0]?.place_id,
@@ -41,7 +43,62 @@ class Photo extends React.PureComponent {
     componentDidMount() {
         this._loadFontsAsync();
     }
+
     render() {
+        const saveToDataBase = async () => {
+            const formData = new FormData();
+            let photo = { uri: this.props.item.uri }
+            console.log("uri", this.state.uri);
+            formData.append('image', {
+                data: photo.uri,
+                name: 'photo.png',
+                type: 'image/png'
+            });
+            formData.append('Content-Type', 'image/png');
+
+            fetch('http://pixtest2022.me/upload-photo.php', {
+                method: 'post',
+                headers: {
+
+                    'Content-Type': 'multipart/form-data',
+                },
+                body: formData
+            }).then((response) => response.json())
+                .then((responseJson) => {
+                    console.log(responseJson);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        }
+
+        const onShare = async () => {
+            try {
+                const result = await Share.share({
+                    message:
+                        'React Native | A framework for building native apps using React',
+                });
+                if (result.action === Share.sharedAction) {
+                    if (result.activityType) {
+                        // shared with activity type of result.activityType
+                        console.log('1')
+                        const res = await MediaLibrary.requestPermissionsAsync()
+                        if (res.granted) {
+                            await saveToDataBase()
+                        } else {
+                            console.log('blabla')
+                        }
+                    } else {
+                        // shared
+                        console.log('2')
+                    }
+                } else if (result.action === Share.dismissedAction) {
+                    alert('Your photo share is cancelled')
+                }
+            } catch (error) {
+                alert(error.message);
+            }
+        };
         const storeData = async (image_id, value) => {
             try {
                 const jsonValue = JSON.stringify(value)
@@ -92,51 +149,54 @@ class Photo extends React.PureComponent {
         return (
             <View style={{ marginTop: 0, justifyContent: 'center', backgroundColor: 'white', width: screenWidth, height: screenHeight }}>
                 <ImageBackground source={{ uri: this.props.item.uri }} style={{ width: screenWidth, aspectRatio: calculateAspectRatio() }} />
-                {this.state.isViewed === "yes" && (
-                    <View style={{
-                        position: 'absolute',
-                        top: 0,
-                        width: '100%',
-                        backgroundColor: 'white'
-                    }}>
+                {
+                    this.state.isViewed === "yes" && (
                         <View style={{
-                            flex: 1,
-                            flexDirection: 'row',
-                            justifyContent: 'space-between'
+                            position: 'absolute',
+                            top: 0,
+                            width: '100%',
+                            backgroundColor: 'white'
                         }}>
-                            <TouchableOpacity style={{ height: '100%' }} onPress={() => this.props.navigation.navigate('Home')}>
-                                <Image source={ArrowBack} style={{
-                                    height: 20,
-                                    width: 14,
-                                    marginTop: 12,
-                                    marginBottom: 12,
-                                    marginLeft: 10
-                                }} title="Info Button" />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={{ flexDirection: 'row' }} onPress={() => this.props.navigation.navigate('Home')}>
-                                <Text style={{
-                                    fontSize: 19,
-                                    fontFamily: 'Poppins-Bold',
-                                    color: '#393939',
-                                    marginTop: 11,
-                                    paddingRight: 6
-                                }}>
-                                    Share
-                                </Text>
-                                <View>
-                                    <Image source={ShareIcon} style={{
-                                        backgroundColor: 'white',
-                                        height: 22,
-                                        width: 26,
+                            <View style={{
+                                flex: 1,
+                                flexDirection: 'row',
+                                justifyContent: 'space-between'
+                            }}>
+                                <TouchableOpacity style={{ height: '100%' }} onPress={() => this.props.navigation.navigate('Home')}>
+                                    <Image source={ArrowBack} style={{
+                                        height: 20,
+                                        width: 14,
+                                        marginTop: 12,
+                                        marginBottom: 12,
+                                        marginLeft: 10
+                                    }} title="Info Button" />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={{ flexDirection: 'row' }} onPress={() => onShare()}>
+                                    <Text style={{
+                                        fontSize: 19,
+                                        fontFamily: 'Poppins-Bold',
+                                        color: '#393939',
                                         marginTop: 11,
-                                        marginRight: 5
-                                    }} title="Share Button" />
-                                </View>
-                            </TouchableOpacity>
+                                        paddingRight: 6
+                                    }}>
+                                        Share
+                                    </Text>
+                                    <View>
+                                        <Image source={ShareIcon} style={{
+                                            backgroundColor: 'white',
+                                            height: 22,
+                                            width: 26,
+                                            marginTop: 11,
+                                            marginRight: 5
+                                        }} title="Share Button" />
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                    </View>
-                )}
-                {this.state.isViewed === "no" &&
+                    )
+                }
+                {
+                    this.state.isViewed === "no" &&
                     (<View style={{
                         height: '50%',
                         position: 'absolute',
@@ -273,59 +333,61 @@ class Photo extends React.PureComponent {
                     </View>
                     )
                 }
-                {this.state.isViewed === "yes" && (
-                    <View style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        width: '100%',
-                        backgroundColor: 'transparent'
-                    }}>
-                        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', marginBottom: 45 }}>
-                            <TouchableOpacity onPress={() => {
-                                this.props.navigation.navigate('Information', {
-                                    itemId: this.props.item.id,
-                                    uri: this.props.item.uri,
-                                    place: this.state.title,
-                                    place_id: this.props.item.place_id,
-                                    latitude: this.props.item.latitude,
-                                    longitude: this.props.item.longitude
-                                });
-                            }}>
-                                <Image source={InfoButton} style={{ height: 60, width: 60 }} title="Info Button" />
-                            </TouchableOpacity>
-                        </View>
+                {
+                    this.state.isViewed === "yes" && (
                         <View style={{
-                            flex: 1,
-                            flexDirection: 'row',
-                            justifyContent: 'center',
-                            backgroundColor: 'white'
+                            position: 'absolute',
+                            bottom: 0,
+                            width: '100%',
+                            backgroundColor: 'transparent'
                         }}>
-                            <TouchableOpacity onPress={() => {
-                                this.setState({ isViewed: "no" })
-                                console.log(this.props.item.isViewed)
-                                editPlaces(this.props.item.latitude, this.props.item.longitude)
-                                // setIsViewed(false)
-                                // imagesTest[index].isViewed = "no"
-                                // console.log("KLIKED")
+                            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', marginBottom: 20 }}>
+                                <TouchableOpacity onPress={() => {
+                                    this.props.navigation.navigate('Information', {
+                                        itemId: this.props.item.id,
+                                        uri: this.props.item.uri,
+                                        place: this.state.title,
+                                        place_id: this.props.item.place_id,
+                                        latitude: this.props.item.latitude,
+                                        longitude: this.props.item.longitude
+                                    });
+                                }}>
+                                    <Image source={InfoButton} style={{ height: 60, width: 60 }} title="Info Button" />
+                                </TouchableOpacity>
+                            </View>
+                            <View style={{
+                                flex: 1,
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                backgroundColor: 'white'
+                            }}>
+                                <TouchableOpacity onPress={() => {
+                                    this.setState({ isViewed: "no" })
+                                    console.log(this.props.item.isViewed)
+                                    editPlaces(this.props.item.latitude, this.props.item.longitude)
+                                    // setIsViewed(false)
+                                    // imagesTest[index].isViewed = "no"
+                                    // console.log("KLIKED")
 
-                                // getNearByPlaces(imagesTest[index]?.latitude, imagesTest[index]?.longitude)
-                                // imagesTest[index].nearbyplaces = nearByPlaces
-                            }}>
-                                <Image source={EditIcon} style={{ height: 20, width: 20, marginTop: 12 }} title="Edit Icon" />
-                            </TouchableOpacity>
-                            <Text style={{
-                                textAlign: 'center',
-                                padding: 12,
-                                fontSize: 17,
-                                fontFamily: 'Poppins-Regular',
-                                color: '#393939'
-                            }}>
-                                {this.state.title}
-                            </Text>
+                                    // getNearByPlaces(imagesTest[index]?.latitude, imagesTest[index]?.longitude)
+                                    // imagesTest[index].nearbyplaces = nearByPlaces
+                                }}>
+                                    <Image source={EditIcon} style={{ height: 20, width: 20, marginTop: 12 }} title="Edit Icon" />
+                                </TouchableOpacity>
+                                <Text style={{
+                                    textAlign: 'center',
+                                    padding: 12,
+                                    fontSize: 17,
+                                    fontFamily: 'Poppins-Regular',
+                                    color: '#393939'
+                                }}>
+                                    {this.state.title}
+                                </Text>
+                            </View>
                         </View>
-                    </View>
-                )}
-            </View>
+                    )
+                }
+            </View >
         )
     }
 }

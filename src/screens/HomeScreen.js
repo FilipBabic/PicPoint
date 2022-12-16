@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     },
     images: {
         height: screenWidth / 3 - 8, width: screenWidth / 3 - 8,
-        borderRadius: 30, marginLeft: 6
+        borderRadius: 30, marginLeft: 6, marginBottom: 6
     },
     activityIndicator: {
         flex: 1,
