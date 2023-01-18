@@ -48,14 +48,12 @@ class Photo extends React.PureComponent {
         const saveToDataBase = async () => {
             const formData = new FormData();
             let photo = { uri: this.props.item.uri }
-            console.log("uri", this.state.uri);
+            console.log("uri", photo.uri);
             formData.append('image', {
-                data: photo.uri,
+                uri: photo.uri,
                 name: 'photo.png',
                 type: 'image/png'
             });
-            formData.append('Content-Type', 'image/png');
-
             fetch('http://pixtest2022.me/upload-photo.php', {
                 method: 'post',
                 headers: {
