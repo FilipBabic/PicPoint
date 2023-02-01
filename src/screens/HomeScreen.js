@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Platform, Dimensions, ActivityIndicator, SafeAreaView, ScrollView, View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
+import { Platform, Dimensions, ActivityIndicator, StatusBar, SafeAreaView, ScrollView, View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
 import moment from 'moment';
 import { useHeaderHeight } from '@react-navigation/elements';
 import * as MediaLibrary from 'expo-media-library';
@@ -107,10 +107,12 @@ const HomeScreen = ({ navigation }) => {
         try {
             const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&rankby=distance&key=' + GoogleMapsAPIKey);
             const data = await response.json()
+            console.log("DATA", data)
             var name = data.results.map((name22) => {
                 const nesto = { name: name22.name, place_id: name22.place_id, selected22: false }
                 return nesto
             })
+            console.log("name", name[0])
             name[0].selected22 = true;
             return name
         } catch (error) {
@@ -127,7 +129,13 @@ const HomeScreen = ({ navigation }) => {
     }
     return isLoading === false ? (
         <View style={{ paddingTop: Platform.OS === 'android' ? 0 : 0 }}>
+            <StatusBar translucent backgroundColor="#162b54" />
             <ScrollView>
+                <View style={{ backgroundColor: 'white' }}>
+                    <Text style={{ fontSize: 20, color: 'green', textAlign: 'right' }}>
+                        v 1.1
+                    </Text>
+                </View>
                 <TouchableOpacity onPress={clearLocalStorage}>
                     <Text style={{ color: 'red', padding: 20 }}>
                         CLEAR LOCAL STORAGE

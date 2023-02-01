@@ -28,12 +28,12 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        screenOptions={{
-          transitionSpec: {
-            open: config,
-            close: config
-          }
-        }}
+      // screenOptions={{
+      //   transitionSpec: {
+      //     open: config,
+      //     close: config
+      //   }
+      // }}
       >
         <Stack.Screen name="Home" component={HomeScreen} options={{
           title: 'New pix',

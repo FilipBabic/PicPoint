@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Dimensions, Keyboard, Image, View, Text, TextInput, Linking, ImageBackground, TouchableWithoutFeedback, TouchableHighlight, ScrollView, StyleSheet } from 'react-native';
+import { Dimensions, Keyboard, Image, View, Text, TextInput, ImageBackground, TouchableWithoutFeedback, TouchableHighlight, ScrollView, StyleSheet } from 'react-native';
+import * as Linking from 'expo-linking';
 import { useFonts } from 'expo-font';
 import { LinearGradient } from 'expo-linear-gradient';
 import About from '../icons/10-about.png';
@@ -62,7 +63,7 @@ const InfoScreen = ({ route, navigation }) => {
             setUrl(data.result?.url);
             setWebsite(data.result?.website);
             setPhotos(data.result?.photos);
-            console.log("WEBSITE", data.result?.url)
+            console.log("WEBSITE URL Phone", website, url, phoneNumber)
             // setOpenNow(data.result?.opening_hours?.open_now);
             // setWeekDayText(data.result?.opening_hours?.weekday_text)
             // setTotalUserRankings(data.result?.user_ratings_total)
@@ -71,28 +72,31 @@ const InfoScreen = ({ route, navigation }) => {
         }
     }
     const getWeatherInfo = async (longitude, latitude) => {
-        fetch(`http://api.weatherapi.com/v1/current.json?q=${latitude},${longitude}&key=d1026a1d4a9144eeb91165513221512`)
-            .then((response) => response.json())
-            .then((json) => {
-                setTemp(
-                    json.current.temp_c
-                );
-                setCondition(json.current?.condition?.text)
-                setWlocation(`${json.location?.name}, ${json.location?.region}`)
-                setWtime(json.location?.localtime)
-                let wicon = "https://" + json.current?.condition?.icon.slice(2)
-                setWicon(wicon)
-                console.log("CURENT TEMP", json.current.temp_c)
-            }).catch((error) => {
-                console.error(error);
-            })
+        console.log("LONGITUDE 888: ", longitude, latitude)
+        if (typeof longitude !== "undefined") {
+            fetch(`http://api.weatherapi.com/v1/current.json?q=${latitude},${longitude}&key=d1026a1d4a9144eeb91165513221512`)
+                .then((response) => response.json())
+                .then((json) => {
+                    setTemp(
+                        json.current.temp_c
+                    );
+                    setCondition(json.current?.condition?.text)
+                    setWlocation(`${json.location?.name}, ${json.location?.region}`)
+                    setWtime(json.location?.localtime)
+                    let wicon = "https://" + json.current?.condition?.icon.slice(2)
+                    setWicon(wicon)
+                    console.log("CURENT TEMP", json.current.temp_c)
+                }).catch((error) => {
+                    console.error(error);
+                })
+        }
     }
     useEffect(() => {
         //SplashScreen.preventAutoHideAsync();
         navigation.setOptions({ headerShown: false, tabBarVisible: false });
         getLocationInfo(place_id)
         getWeatherInfo(longitude, latitude)
-        console.log("place ID ", place_id, longitude, latitude, website, wIcon);
+        console.log("place ID ", place_id, longitude, latitude, website, wIcon, url);
     }, []);
     const [fontsLoaded] = useFonts({
         'Poppins-Regular': require('../fonts/Poppins-Regular.ttf'),
@@ -137,7 +141,7 @@ const InfoScreen = ({ route, navigation }) => {
                             />
                         </View>
                     )}
-                    {showWeather && (
+                    {showWeather && typeof longitude !== 'undefined' && (
                         <View style={{ flex: 0.59 }}>
                             <View style={{ backgroundColor: 'white', alignItems: 'center', width: '60%', marginLeft: '20%', paddingTop: 20, paddingBottom: 20, borderRadius: 25 }}>
                                 <Text style={{ fontSize: 18, textAlign: 'center' }}>
@@ -201,6 +205,7 @@ const InfoScreen = ({ route, navigation }) => {
                                     setSelected([true, false, false, false, false, false, false, false, false, false])
                                     setShowWeather(false)
                                     setShowAbout(true)
+                                    setShowInfo(false)
                                 }}>
                                     <View style={styles.buttonView}>
                                         <Image source={selected[0] ? AboutSel : About} style={{ height: iconWidth, width: iconWidth }} />
@@ -213,13 +218,18 @@ const InfoScreen = ({ route, navigation }) => {
                                     setSelected([false, true, false, false, false, false, false, false, false, false])
                                     setShowWeather(false)
                                     setShowAbout(false)
-                                    Linking.canOpenURL(`${website}`).then(supported => {
-                                        if (supported) {
-                                            Linking.openURL(`${website}`)
-                                        } else {
-                                            setShowInfo(true);
-                                        }
-                                    })
+                                    // Linking.canOpenURL(`${website}`).then(supported => {
+                                    //     if (supported === false) {
+                                    //         setShowInfo(true);
+                                    //     } else {
+                                    //         Linking.openURL(`${website}`)
+                                    //     }
+                                    // })
+                                    if (typeof website === "undefined") {
+                                        setShowInfo(true);
+                                    } else {
+                                        Linking.openURL(`${website}`)
+                                    }
                                 }}>
                                     <View style={styles.buttonView}>
                                         <Image source={selected[1] ? WebsiteSel : Website} style={{ height: iconWidth, width: iconWidth }} />
@@ -232,13 +242,11 @@ const InfoScreen = ({ route, navigation }) => {
                                     setSelected([false, false, true, false, false, false, false, false, false, false])
                                     setShowWeather(false)
                                     setShowAbout(false)
-                                    Linking.canOpenURL(`${url}`).then(supported => {
-                                        if (supported) {
-                                            Linking.openURL(`${url}`)
-                                        } else {
-                                            setShowInfo(true);
-                                        }
-                                    })
+                                    if (typeof url === "undefined") {
+                                        setShowInfo(true);
+                                    } else {
+                                        Linking.openURL(`${url}`)
+                                    }
                                 }}>
                                     <View style={styles.buttonView}>
                                         <Image source={selected[2] ? LocationSel : Location} style={{ height: iconWidth, width: iconWidth }} />
@@ -251,7 +259,12 @@ const InfoScreen = ({ route, navigation }) => {
                                     setSelected([false, false, false, true, false, false, false, false, false, false])
                                     setShowWeather(false)
                                     setShowAbout(false)
-                                    phoneNumber == "undefined" ? setShowInfo(true) : Linking.openURL(`tel:${phoneNumber}`)
+                                    //phoneNumber == "undefined" ? setShowInfo(true) : Linking.openURL(`tel:${phoneNumber}`)
+                                    if (typeof phoneNumber === "undefined") {
+                                        setShowInfo(true);
+                                    } else {
+                                        Linking.openURL(`tel:${phoneNumber}`)
+                                    }
                                 }}>
                                     <View style={styles.buttonView}>
                                         <Image source={selected[3] ? PhoneSel : Phone} style={{ height: iconWidth, width: iconWidth }} />
@@ -264,7 +277,10 @@ const InfoScreen = ({ route, navigation }) => {
                                     setSelected([false, false, false, false, true, false, false, false, false, false])
                                     setShowWeather(true)
                                     setShowAbout(false)
-                                    //setShowPhotos(false)
+                                    setShowInfo(false)
+                                    if (typeof longitude === 'undefined') {
+                                        setShowInfo(true);
+                                    }
                                 }}>
                                     <View style={styles.buttonView}>
                                         <Image source={selected[4] ? WeatherSel : Weather} style={{ height: iconWidth, width: iconWidth }} />
@@ -289,10 +305,15 @@ const InfoScreen = ({ route, navigation }) => {
                                 <TouchableWithoutFeedback onPress={() => {
                                     setSelected([false, false, false, false, false, false, true, false, false, false])
                                     setShowAbout(false)
-                                    navigation.navigate('Attraction', {
-                                        latitude,
-                                        longitude
-                                    });
+                                    setShowWeather(false)
+                                    if (typeof longitude !== 'undefined') {
+                                        navigation.navigate('Attraction', {
+                                            latitude,
+                                            longitude
+                                        });
+                                    } else {
+                                        setShowInfo(true);
+                                    }
                                 }}>
                                     <View style={{
                                         alignItems: 'center',
@@ -306,10 +327,15 @@ const InfoScreen = ({ route, navigation }) => {
                                 <TouchableWithoutFeedback onPress={() => {
                                     setSelected([false, false, false, false, false, false, false, true, false, false])
                                     setShowAbout(false)
-                                    navigation.navigate('Accommodation', {
-                                        latitude,
-                                        longitude
-                                    });
+                                    setShowWeather(false)
+                                    if (typeof longitude !== 'undefined') {
+                                        navigation.navigate('Accommodation', {
+                                            latitude,
+                                            longitude
+                                        });
+                                    } else {
+                                        setShowInfo(true);
+                                    }
                                 }}>
                                     <View style={{
                                         alignItems: 'center',
@@ -323,10 +349,15 @@ const InfoScreen = ({ route, navigation }) => {
                                 <TouchableWithoutFeedback onPress={() => {
                                     setSelected([false, false, false, false, false, false, false, false, true, false])
                                     setShowAbout(false)
-                                    navigation.navigate('Food', {
-                                        latitude,
-                                        longitude
-                                    });
+                                    setShowWeather(false)
+                                    if (typeof longitude !== 'undefined') {
+                                        navigation.navigate('Food', {
+                                            latitude,
+                                            longitude
+                                        });
+                                    } else {
+                                        setShowInfo(true);
+                                    }
                                 }}>
                                     <View style={styles.buttonView}>
                                         <Image source={selected[8] ? FoodSel : Food} style={{ height: iconWidth, width: iconWidth }} />

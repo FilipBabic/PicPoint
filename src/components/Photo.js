@@ -45,19 +45,23 @@ class Photo extends React.PureComponent {
     }
 
     render() {
+        console.log("nearbyplaces", this.props.item.nearbyplaces)
         const saveToDataBase = async () => {
+            console.log('savetodb')
             const formData = new FormData();
-            let photo = { uri: this.props.item.uri }
-            console.log("uri", photo.uri);
+            const nameParts = this.props.item.filename.split('.')
+            console.log("FILENAME", this.props.item.filename)
+            const mime = nameParts[nameParts.length - 1]
+            const assetInfo = await MediaLibrary.getAssetInfoAsync(this.props.item);
+            console.log('assetInfo', assetInfo.localUri);
             formData.append('image', {
-                uri: photo.uri,
-                name: 'photo.png',
-                type: 'image/png'
+                uri: assetInfo.localUri,
+                name: assetInfo.filename,
+                type: `image/${mime}`
             });
             fetch('http://pixtest2022.me/upload-photo.php', {
                 method: 'post',
                 headers: {
-
                     'Content-Type': 'multipart/form-data',
                 },
                 body: formData
