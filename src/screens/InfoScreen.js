@@ -55,24 +55,15 @@ const InfoScreen = ({ route, navigation }) => {
         try {
             const response = await fetch('https://maps.googleapis.com/maps/api/place/details/json?fields=international_phone_number%2Curl%2Cwebsite%2Cphotos&place_id=' + place_id + '&key=' + GoogleMapsAPIKey);
             const data = await response.json()
-            // setName(data.result?.name);
-            // setRating(data.result?.rating);
-            // setPhotos(data.result?.photos);
-            // setBusinessStatus(data.result?.business_status);
             setPhoneNumber(data.result?.international_phone_number);
             setUrl(data.result?.url);
             setWebsite(data.result?.website);
             setPhotos(data.result?.photos);
-            console.log("WEBSITE URL Phone", website, url, phoneNumber)
-            // setOpenNow(data.result?.opening_hours?.open_now);
-            // setWeekDayText(data.result?.opening_hours?.weekday_text)
-            // setTotalUserRankings(data.result?.user_ratings_total)
         } catch (error) {
             console.error(error);
         }
     }
     const getWeatherInfo = async (longitude, latitude) => {
-        console.log("LONGITUDE 888: ", longitude, latitude)
         if (typeof longitude !== "undefined") {
             fetch(`http://api.weatherapi.com/v1/current.json?q=${latitude},${longitude}&key=d1026a1d4a9144eeb91165513221512`)
                 .then((response) => response.json())
@@ -85,7 +76,6 @@ const InfoScreen = ({ route, navigation }) => {
                     setWtime(json.location?.localtime)
                     let wicon = "https://" + json.current?.condition?.icon.slice(2)
                     setWicon(wicon)
-                    console.log("CURENT TEMP", json.current.temp_c)
                 }).catch((error) => {
                     console.error(error);
                 })
@@ -96,7 +86,6 @@ const InfoScreen = ({ route, navigation }) => {
         navigation.setOptions({ headerShown: false, tabBarVisible: false });
         getLocationInfo(place_id)
         getWeatherInfo(longitude, latitude)
-        console.log("place ID ", place_id, longitude, latitude, website, wIcon, url);
     }, []);
     const [fontsLoaded] = useFonts({
         'Poppins-Regular': require('../fonts/Poppins-Regular.ttf'),
@@ -135,7 +124,7 @@ const InfoScreen = ({ route, navigation }) => {
                                 value={aboutText}
                                 textAlign={'center'}
                                 multiline={true}
-                                placeholder="Enter Photo Hint"
+                                placeholder="Write your story behind the photo"
                                 placeholderTextColor="rgba(178,178,178,1)"
                                 keyboardType="default"
                             />
@@ -166,13 +155,8 @@ const InfoScreen = ({ route, navigation }) => {
                         <View style={{ flex: 0.69, alignItems: 'center', }}>
                             <ScrollView horizontal >
                                 {photos.map((item) => {
-                                    { console.log("Photo refere", item) }
                                     return (
                                         <View>
-                                            {/* <Text style={{ color: 'yellow' }}>
-                                        {item.photo_reference}
-                                        zzz
-                                    </Text> */}
                                             <Image source={About} style={{ width: screenWidth, height: screenWidth }} />
                                         </View>
                                     )

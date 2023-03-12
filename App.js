@@ -48,7 +48,7 @@ export default function App() {
         }} />
         <Stack.Screen name="Information" component={Tabs} options={{
           headerBackTitle: '',
-          headerTitle: 'Informations',
+          headerTitle: 'Gallery',
           headerTitleStyle: {
             fontWeight: '900',
             color: '#393939'

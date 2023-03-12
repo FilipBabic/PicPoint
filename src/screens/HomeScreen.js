@@ -30,7 +30,8 @@ const HomeScreen = ({ navigation }) => {
     const reduceImages = async (images) => {
         let filteredData;
         if (Platform.OS === 'android') {
-            filteredData = images.filter(x => String(x.uri).includes("file:///storage/emulated/0/DCIM"));
+            let test = images.filter(x => !String(x.uri).includes("file:///storage/emulated/0/DCIM/Screenshots"))
+            filteredData = test.filter(x => String(x.uri).includes("file:///storage/emulated/0/DCIM"));
         } else if (Platform.OS === 'ios') {
             filteredData = images.filter(x => String(x.uri).includes("ph://"));
         }
@@ -87,7 +88,9 @@ const HomeScreen = ({ navigation }) => {
                 const obj = {
                     title: 'no title',
                     place_id: 'no place id',
-                    isViewed: 'no'
+                    isViewed: 'no',
+                    notes: [],
+                    recordings: []
                 }
                 return obj
             } else {
@@ -95,7 +98,9 @@ const HomeScreen = ({ navigation }) => {
                 const obj = {
                     title: data?.title,
                     place_id: data?.place_id,
-                    isViewed: 'yes'
+                    isViewed: 'yes',
+                    notes: data?.notes,
+                    recordings: data?.recordings
                 }
                 return obj
             }
@@ -107,12 +112,11 @@ const HomeScreen = ({ navigation }) => {
         try {
             const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&rankby=distance&key=' + GoogleMapsAPIKey);
             const data = await response.json()
-            console.log("DATA", data)
+            //console.log("DATA", data)
             var name = data.results.map((name22) => {
                 const nesto = { name: name22.name, place_id: name22.place_id, selected22: false }
                 return nesto
             })
-            console.log("name", name[0])
             name[0].selected22 = true;
             return name
         } catch (error) {
@@ -133,7 +137,7 @@ const HomeScreen = ({ navigation }) => {
             <ScrollView>
                 <View style={{ backgroundColor: 'white' }}>
                     <Text style={{ fontSize: 20, color: 'green', textAlign: 'right' }}>
-                        v 1.1
+                        v 1.2
                     </Text>
                 </View>
                 <TouchableOpacity onPress={clearLocalStorage}>

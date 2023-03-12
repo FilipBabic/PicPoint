@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, Button, ImageBackground, TextInput, StyleSheet, ScrollView, TouchableWithoutFeedback, TouchableHighlight, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, Text, Alert, ImageBackground, TextInput, StyleSheet, ScrollView, TouchableWithoutFeedback, TouchableHighlight, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Audio } from 'expo-av';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts } from 'expo-font';
 import { LinearGradient } from 'expo-linear-gradient';
 import Notes from '../icons/27-notes.png';
@@ -8,30 +9,92 @@ import NotesSel from '../icons/28-notes-selected.png';
 import Record from '../icons/29-record.png';
 import RecordSel from '../icons/30-record-selected.png';
 import Close from '../icons/05-close.png';
+import PlayIcon from '../icons/34-play-icon.png';
+import SaveIcon from '../icons/35-save-icon.png';
+import BackArrow from '../icons/04-arrow-back.png';
+
 const screenWidth = Dimensions.get('window').width;
 const NotesScreen = ({ route, navigation }) => {
     const uri = route.params.uri;
     const place = route.params.place;
+    const itemId = route.params.itemId;
     const [selected, setSelected] = useState([false, false])
     const [showNotes, setShowNotes] = useState(false)
+    const [addNote, setAddNote] = useState(true)
     const [showRecords, setShowRecords] = useState(false)
     const [recording, setRecording] = useState()
     const [recordings, setRecordings] = useState([])
     const [errorMessage, setErrorMessage] = useState("")
     const [errorMessageColor, setErrorMessageColor] = useState("red")
-    const [notesError, setNotesError] = useState("")
-    const [notesErrorColor, setNotesErrorColor] = useState("red")
-    const [textFieldValue, setTextFieldValue] = useState("")
+    const [errorRecordingsMessage, setRecordingsErrorMessage] = useState("")
+    const [errorRecordingsMessageColor, setErrorRecordingsMessageColor] = useState("red")
+    const [textFieldTitle, setTextFieldTitle] = useState("")
+    const [textFieldBody, setTextFieldBody] = useState("")
     const scrollViewRef = useRef();
-    const [notes, setNotes] = useState(["note 1, this is my favorite image, from caffe prime on new belgrade, i would like to come back here one day, good staff and great coffe!!!", "note2,note 1, this is my favorite image, from caffe prime on new belgrade, i would like to come back here one day, good staff and great coffe!!!"])
+    const [notes, setNotes] = useState(null)
+    const [edit, setEdit] = useState(null)
+    const [sound, setSound] = useState()
     const iconWidth = screenWidth / 4 - 20
-
+    const loadNotesFromLocalStorage = async (image_id) => {
+        try {
+            const item = await AsyncStorage.getItem(`@${image_id}`)
+            const data = JSON.parse(item)
+            const storedNotes = data?.notes
+            if (typeof storedNotes === "undefined") {
+                setNotes([])
+            } else {
+                setNotes(storedNotes)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
+    const saveNotesToLocalStorage = async (image_id, deleted) => {
+        try {
+            await AsyncStorage.mergeItem(`@${image_id}`, JSON.stringify({ notes: notes }))
+            //let person = await AsyncStorage.getItem(`@${image_id}`)
+            deleted ? setErrorMessage("Note successfully deleted!") : setErrorMessage("Note successfully added!")
+            setErrorMessageColor("green")
+            setAddNote(true)
+            setTextFieldTitle("")
+            setTextFieldBody("")
+            //console.log("THIS IS THE STORED OBJECT", person)
+        } catch (e) {
+            console.error(e);
+        }
+    }
+    const loadRecordingsFromLocalStorage = async (image_id) => {
+        try {
+            const item = await AsyncStorage.getItem(`@${image_id}`)
+            const data = JSON.parse(item)
+            const storedRecordings = data?.recordings
+            if (typeof storedRecordings === "undefined") {
+                setRecordings([])
+            } else {
+                setRecordings(storedRecordings)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
+    const saveRecordingsToLocalStorage = async (image_id, deleted) => {
+        try {
+            await AsyncStorage.mergeItem(`@${image_id}`, JSON.stringify({ recordings: recordings }))
+            //let person = await AsyncStorage.getItem(`@${image_id}`)
+            deleted ? setRecordingsErrorMessage("Record successfully deleted!") : setRecordingsErrorMessage("Record successfully added!")
+            setErrorRecordingsMessageColor("green")
+            //console.log("THIS IS THE STORED OBJECT RECORDINGS", person)
+        } catch (e) {
+            console.error(e);
+        }
+    }
     const startRecording = async () => {
         try {
             const permission = await Audio.requestPermissionsAsync()
-            console.log("COUNT RECORDINGS", recordings.length + 1)
-            if (recordings.length + 1 > 5) {
-                setErrorMessage("You have maximum allowed 5 recorded sounds for this photo.")
+            // MAXIMUM RECORDINGS
+            if (recordings.length > 4) {
+                setErrorRecordingsMessageColor("red")
+                setRecordingsErrorMessage("You have maximum allowed 5 recorded sounds for this photo.")
                 return
             }
             if (permission.status === "granted") {
@@ -45,7 +108,7 @@ const NotesScreen = ({ route, navigation }) => {
 
                 setRecording(recording)
             } else {
-                setErrorMessage("Please grant premission to app to access microphone")
+                setRecordingsErrorMessage("Please grant premission to app to access microphone")
             }
         }
         catch (err) {
@@ -64,8 +127,20 @@ const NotesScreen = ({ route, navigation }) => {
             file: recording.getURI()
         })
         setRecordings(updatedRecordings)
+        saveRecordingsToLocalStorage(itemId, false)
     }
-
+    const playLocalSound = async (test) => {
+        console.log('Loading Sound', test);
+        const sound1 = test.file
+        const { sound } = await Audio.Sound.createAsync(
+            {
+                uri: `${sound1}`
+            }
+        );
+        setSound(sound);
+        console.log('Playing Sound');
+        await sound.replayAsync();
+    }
     const getDurationFormatted = (millis) => {
         const minutes = millis / 1000 / 60
         const minutesDisplay = Math.floor(minutes)
@@ -76,19 +151,63 @@ const NotesScreen = ({ route, navigation }) => {
     const getRecordingLines = () => {
         return recordings.map((recordingLine, index) => {
             return (
-                <View key={index} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: "white" }}>
-                    <Text style={{ flex: 1, margin: 16, color: "red" }}>
-                        Recording {index + 1} - {recordingLine.duration}
+                <View key={index} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255, 255, 255, 0.6)', borderRadius: 30, marginLeft: 14, marginRight: 14, marginBottom: 8, padding: 8 }}>
+                    <Text style={{ color: '#393939', fontSize: 18, fontFamily: 'Poppins-Bold', paddingLeft: 8, paddingRight: 8, textAlign: 'center' }}>
+                        Voice Note {index + 1} - <Text style={{ color: '#6f7071', fontSize: 17 }}>{recordingLine.duration}</Text>
                     </Text>
-                    <Button style={{ margin: 16 }}
-                        onPress={() => recordingLine.sound.replayAsync()} title="Play"></Button>
-
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <TouchableOpacity
+                            onPress={() => playLocalSound(recordingLine)} title="Replay"><Image source={PlayIcon} style={{ height: 40, width: 40 }} /></TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => createDeleteRecordAlert(index)} title="Replay"><Image source={Close} style={{ height: 30, width: 30, marginTop: 5, marginLeft: 5, marginRight: 5 }} /></TouchableOpacity>
+                    </View>
                 </View>
             )
         })
     }
+    const createDeleteNoteAlert = (i) => {
+        Alert.alert('Delete Note', 'Are you sure you want to delete this note', [
+            {
+                text: 'Cancel',
+                onPress: () => console.log('Cancel Pressed'),
+                style: 'cancel',
+            },
+            {
+                text: 'OK', onPress: () => {
+                    var notesArray = notes
+                    notesArray.splice(i, 1)
+                    setNotes(notesArray)
+                    saveNotesToLocalStorage(itemId, true)
+                    loadNotesFromLocalStorage(itemId)
+                    setEdit(null)
+                }
+            },
+        ]);
+    }
+    const createDeleteRecordAlert = (i) => {
+        Alert.alert('Delete Record', 'Are you sure you want to delete this record', [
+            {
+                text: 'Cancel',
+                onPress: () => console.log('Cancel Pressed'),
+                style: 'cancel',
+            },
+            {
+                text: 'OK', onPress: () => {
+                    var recordingsArray = recordings
+                    recordingsArray.splice(i, 1)
+                    setRecordings(recordingsArray)
+                    saveRecordingsToLocalStorage(itemId, true)
+                    loadRecordingsFromLocalStorage(itemId)
+                    setEdit(null)
+                }
+            },
+        ]);
+    }
     useEffect(() => {
         navigation.setOptions({ headerShown: false, tabBarVisible: false });
+        //setNotes([])
+        loadNotesFromLocalStorage(itemId)
+        loadRecordingsFromLocalStorage(itemId)
     }, []);
     const [fontsLoaded] = useFonts({
         'Poppins-Regular': require('../fonts/Poppins-Regular.ttf'),
@@ -102,58 +221,24 @@ const NotesScreen = ({ route, navigation }) => {
             <View style={{ backgroundColor: 'rgba(200,200,200,0.3)', flex: 1, flexDirection: 'column', justifyContent: 'flex-end' }}>
                 {showNotes &&
                     <View style={{ flex: 0.69 }}>
-
-                        <ScrollView ref={scrollViewRef}>
-                            {notes.map((item) => {
-                                return (
-                                    <View key={item} style={{ margin: 10, padding: 10, backgroundColor: 'white', borderRadius: 25 }}>
-                                        <Text style={{ color: '#393939', fontSize: 17, fontFamily: 'Poppins-Regular' }}>
-                                            {item}
-                                        </Text>
-                                    </View>)
-                            })}
-                        </ScrollView>
-                        <View style={{ padding: 10, marginBottom: 20, alignItems: 'center' }}>
-                            <Text style={{ textAlign: 'center', color: notesErrorColor, fontSize: 16, fontFamily: 'Poppins-Regular' }}>{notesError}</Text>
-                            <TextInput
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: "#c8c8c8",
-                                    borderRadius: 14,
-                                    padding: 10,
-                                    backgroundColor: 'white',
-                                    fontSize: 18,
-                                    fontFamily: 'Poppins-Regular',
-                                    color: '#393939'
-                                }}
-                                onChangeText={(text) => setTextFieldValue(text)}
-                                value={textFieldValue}
-                                placeholder="enter your note here"
-                                placeholderTextColor="rgba(178,178,178,1)"
-                                keyboardType="default"
-                            />
+                        {addNote && <View style={{ padding: 0, alignItems: 'center' }}>
                             <TouchableWithoutFeedback onPress={() => {
+                                setTextFieldTitle("")
+                                setTextFieldBody("")
+                                setEdit(null)
+                                //MAXIMUM NOTES
                                 if (notes.length > 4) {
-                                    setNotesError("You have maximum allowed 5 notes for this photo.")
-                                    setNotesErrorColor("red")
-                                } else if (textFieldValue !== "") {
-                                    setNotes([...notes, textFieldValue])
-                                    setTextFieldValue("")
-                                    setNotesError("Note successfully added!")
-                                    setNotesErrorColor("green")
-                                    setTimeout(() => {
-                                        scrollViewRef.current.scrollToEnd({ animated: true })
-                                    }, 100)
-                                } else if (textFieldValue === "") {
-                                    setNotesError("Text Field is empty")
-                                    setNotesErrorColor("red")
+                                    setErrorMessage("You have maximum allowed 5 notes for this photo!!!")
+                                    setErrorMessageColor("red")
+                                } else {
+                                    setErrorMessage("")
+                                    setAddNote(false)
                                 }
-
-                                scrollViewRef.current.scrollToEnd({ animated: true })
                             }}>
                                 <LinearGradient
                                     style={{
-                                        marginTop: 20,
+                                        marginTop: 10,
+                                        marginBottom: 10,
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         backgroundColor: '#EB00A0',
@@ -168,21 +253,135 @@ const NotesScreen = ({ route, navigation }) => {
                                     </Text>
                                 </LinearGradient>
                             </TouchableWithoutFeedback>
+                            <View style={{ width: screenWidth }}>
+                                <ScrollView ref={scrollViewRef}>
+                                    {notes.map((item, index) => {
+                                        return (
+                                            <View key={index} style={{ height: 56, backgroundColor: 'rgba(255, 255, 255, 0.6)', borderRadius: 30, marginLeft: 14, marginRight: 14, marginBottom: 8, paddingLeft: 20, paddingRight: 20, borderRadius: 25, justifyContent: 'center' }}>
+                                                <TouchableWithoutFeedback onPress={() => {
+                                                    setEdit(index)
+                                                    setAddNote(false)
+                                                    setTextFieldTitle(item.title)
+                                                    setTextFieldBody(item.body)
+                                                }}>
+                                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', textAlign: 'center', paddingTop: 8, paddingBottom: 8 }}>
+                                                        <Text style={{ color: '#393939', fontSize: 18, fontFamily: 'Poppins-Bold' }}>
+                                                            {item.title === "" ? item.body : item.title}
+                                                        </Text>
+                                                        <TouchableWithoutFeedback onPress={() => createDeleteNoteAlert(index)}>
+                                                            <Image source={Close} style={{ height: 30, width: 30 }} />
+                                                        </TouchableWithoutFeedback>
+                                                    </View>
+                                                </TouchableWithoutFeedback>
+                                            </View>)
+                                    })}
+                                </ScrollView>
+                            </View>
                         </View>
+                        }
+                        {!addNote &&
+                            <View style={{ backgroundColor: 'red', flex: 0.90, borderRadius: 25, marginTop: 10, marginLeft: 10, marginRight: 10 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#c0c0c1', borderTopLeftRadius: 25, borderTopRightRadius: 25, paddingLeft: 20, paddingRight: 20, paddingTop: 5, paddingBottom: 5 }}>
+                                    <TouchableWithoutFeedback style={{ backgroundColor: 'yellow', height: 80, width: 80 }} onPress={() => {
+                                        setErrorMessage("")
+                                        setAddNote(true)
+                                    }}><Image source={BackArrow} style={{ paddingLeft: 8, paddingRight: 8, height: 25, width: 8 }} /></TouchableWithoutFeedback>
+                                    <Text style={{ color: '#393939', fontSize: 18, fontFamily: 'Poppins-Bold' }}>Note {edit !== null ? edit + 1 : notes.length + 1}</Text>
+                                    <TouchableWithoutFeedback onPress={() => {
+                                        if (textFieldBody !== "") {
+                                            setAddNote(false)
+                                            var notesArray = notes
+                                            const notesObj = {
+                                                title: textFieldTitle,
+                                                body: textFieldBody
+                                            }
+                                            if (edit === null) {
+                                                notesArray.push(notesObj)
+                                            } else {
+                                                notesArray[edit] = notesObj
+                                            }
+                                            setNotes(notesArray)
+                                            saveNotesToLocalStorage(itemId, false)
+                                            setEdit(null)
+                                        } else if (textFieldBody === "") {
+                                            setErrorMessage("Note body is required field and can't be empty")
+                                            setErrorMessageColor("red")
+                                        }
+                                        //scrollViewRef.current.scrollToEnd({ animated: true })
+                                    }}><Image source={SaveIcon} style={{ height: 30, width: 30 }} /></TouchableWithoutFeedback>
+                                </View>
+                                <TextInput
+                                    style={{
 
+                                        padding: 10,
+                                        backgroundColor: 'white',
+                                        fontSize: 18,
+                                        fontFamily: 'Poppins-Bold'
+                                    }}
+                                    onChangeText={(text) => setTextFieldTitle(text)}
+                                    value={textFieldTitle}
+                                    placeholder="Write Your Note Title Here"
+                                    placeholderTextColor="#393939"
+                                    keyboardType="default"
+                                /><TextInput
+                                    style={{
+                                        flex: 1,
+                                        alignItems: 'flex-start',
+                                        borderBottomLeftRadius: 25,
+                                        borderBottomRightRadius: 25,
+                                        padding: 10,
+                                        height: 'auto',
+                                        fontSize: 18,
+                                        fontFamily: 'Poppins-Regular',
+                                    }}
+                                    onChangeText={(text) => setTextFieldBody(text)}
+                                    value={textFieldBody}
+                                    placeholder="Write your note here"
+                                    placeholderTextColor="rgba(178,178,178,1)"
+                                    backgroundColor="white"
+                                    keyboardType="default"
+                                    multiline
+                                    editable
+                                    numberOfLines={4}
+                                />
+                            </View>
+                        }
+                        <Text style={{ textAlign: 'center', color: errorMessageColor, fontSize: 16, fontFamily: 'Poppins-Regular' }}>{errorMessage}</Text>
                     </View>
                 }
                 {showRecords &&
                     <View style={{ flex: 0.69 }}>
-                        <Text style={{ textAlign: 'center', justifyContent: 'center', color: 'red' }}>
-                            {errorMessage}
-                        </Text>
-                        <Button
-                            title={recording ? 'STOP RECORDING' : 'START RECORDING'}
-                            onPress={recording ? stopRecording : startRecording}
-                            style={{ color: 'red', fontFamily: 'Poppins-Regular' }}
-                        />
+                        <View style={{
+                            padding: 0, alignItems: 'center'
+                        }}>
+                            <TouchableWithoutFeedback
+                                onPress={recording ? stopRecording : startRecording}
+                            >
+                                <LinearGradient
+                                    style={{
+                                        marginTop: 10,
+                                        marginBottom: 10,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        backgroundColor: '#EB00A0',
+                                        height: 40,
+                                        width: screenWidth / 2 - 25,
+                                        borderRadius: 30
+                                    }}
+                                    colors={['#E0038C', '#6A2B90']}>
+                                    <Text style={{
+                                        fontFamily: 'Poppins-Bold',
+                                        color: 'white',
+                                    }}>
+                                        {recording ? 'STOP RECORDING' : 'START RECORDING'}
+                                    </Text>
+                                </LinearGradient>
+                            </TouchableWithoutFeedback>
+                        </View>
                         {getRecordingLines()}
+                        <Text style={{ textAlign: 'center', color: errorRecordingsMessageColor, fontSize: 16, fontFamily: 'Poppins-Regular' }}>
+                            {errorRecordingsMessage}
+                        </Text>
                     </View>
                 }
                 <View style={styles.bottomContainer}>

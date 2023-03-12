@@ -11,7 +11,6 @@ const Tab = createBottomTabNavigator();
 
 const Tabs = ({ route }) => {
     const { itemId, place, uri, place_id, longitude, latitude } = route.params;
-    console.log("ROUTE PARAMS", itemId, place);
     const [fontsLoaded] = useFonts({
         'Poppins-Regular': require('../fonts/Poppins-Regular.ttf'),
         'Poppins-Bold': require('../fonts/Poppins-Bold.ttf'),

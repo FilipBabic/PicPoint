@@ -20,7 +20,6 @@ const GoogleMapsAPIKey = 'AIzaSyBU4bjZbr_wzt3_UPTfIj-WHjoqf_7orOA';
 class Photo extends React.PureComponent {
     constructor(props) {
         super(props);
-        console.log('HEADER: ', this.props.headerHeight)
         this.scrollRef = React.createRef()
         this.state = {
             fontsLoaded: false,
@@ -45,9 +44,7 @@ class Photo extends React.PureComponent {
     }
 
     render() {
-        console.log("nearbyplaces", this.props.item.nearbyplaces)
         const saveToDataBase = async () => {
-            console.log('savetodb')
             const formData = new FormData();
             const nameParts = this.props.item.filename.split('.')
             console.log("FILENAME", this.props.item.filename)
@@ -135,7 +132,6 @@ class Photo extends React.PureComponent {
             this.props.item.place_id = this.props.item.nearbyplaces[id]?.place_id
         }
         const editPlaces = async (latitude, longitude) => {
-            console.log("langitude", latitude, longitude)
             try {
                 const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&rankby=distance&key=' + GoogleMapsAPIKey);
                 const data = await response.json()
