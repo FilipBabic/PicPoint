@@ -133,7 +133,7 @@ class Photo extends React.PureComponent {
         }
         const editPlaces = async (latitude, longitude) => {
             try {
-                const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&rankby=distance&key=' + GoogleMapsAPIKey);
+                const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&radius=40&key=' + GoogleMapsAPIKey);
                 const data = await response.json()
                 this.setState({ near_by_places: data?.results })
                 console.log(data)

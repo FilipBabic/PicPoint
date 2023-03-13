@@ -110,7 +110,7 @@ const HomeScreen = ({ navigation }) => {
     }
     const getNearByPlaces = async (latitude, longitude) => {
         try {
-            const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&rankby=distance&key=' + GoogleMapsAPIKey);
+            const response = await fetch('https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + latitude + ',' + longitude + '&radius=40&key=' + GoogleMapsAPIKey);
             const data = await response.json()
             //console.log("DATA", data)
             var name = data.results.map((name22) => {
@@ -137,7 +137,7 @@ const HomeScreen = ({ navigation }) => {
             <ScrollView>
                 <View style={{ backgroundColor: 'white' }}>
                     <Text style={{ fontSize: 20, color: 'green', textAlign: 'right' }}>
-                        v 1.2
+                        v 1.3
                     </Text>
                 </View>
                 <TouchableOpacity onPress={clearLocalStorage}>

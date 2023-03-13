@@ -36,9 +36,9 @@ export default function App() {
       // }}
       >
         <Stack.Screen name="Home" component={HomeScreen} options={{
-          title: 'New pix',
+          title: 'PicPoint',
           headerStyle: {
-            backgroundColor: '#162b54',
+            backgroundColor: '#6A2B90',
           },
           headerTintColor: '#fff',
           headerTitleStyle: {

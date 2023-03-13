@@ -99,7 +99,7 @@ const InfoScreen = ({ route, navigation }) => {
             <TouchableWithoutFeedback onPress={() => { Keyboard.dismiss() }}>
                 <View style={styles.container} >
                     {showAbout && (
-                        <View style={{ flex: 0.59, marginLeft: '10%', marginRight: '10%' }}>
+                        <View style={{ flex: 0.59, marginLeft: 10, marginRight: 10 }}>
                             {/* <TouchableWithoutFeedback onPress={() => {
 
                         }}>
@@ -112,7 +112,6 @@ const InfoScreen = ({ route, navigation }) => {
                         </TouchableWithoutFeedback> */}
                             <TextInput
                                 style={{
-                                    borderWidth: 1,
                                     borderRadius: 25,
                                     backgroundColor: 'white',
                                     padding: 8,
