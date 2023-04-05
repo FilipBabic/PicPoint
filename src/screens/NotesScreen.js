@@ -58,7 +58,6 @@ const NotesScreen = ({ route, navigation }) => {
             setAddNote(true)
             setTextFieldTitle("")
             setTextFieldBody("")
-            //console.log("THIS IS THE STORED OBJECT", person)
         } catch (e) {
             console.error(e);
         }
@@ -68,22 +67,24 @@ const NotesScreen = ({ route, navigation }) => {
             const item = await AsyncStorage.getItem(`@${image_id}`)
             const data = JSON.parse(item)
             const storedRecordings = data?.recordings
+
             if (typeof storedRecordings === "undefined") {
                 setRecordings([])
             } else {
                 setRecordings(storedRecordings)
             }
+            console.log("RECORDINGS", recordings)
+            console.log("STORED RECORDINGS", storedRecordings)
         } catch (e) {
             console.error(e)
         }
     }
-    const saveRecordingsToLocalStorage = async (image_id, deleted) => {
+    const saveRecordingsToLocalStorage = async (image_id, deleted, obj) => {
         try {
-            await AsyncStorage.mergeItem(`@${image_id}`, JSON.stringify({ recordings: recordings }))
-            //let person = await AsyncStorage.getItem(`@${image_id}`)
+            await AsyncStorage.mergeItem(`@${image_id}`, JSON.stringify({ recordings: obj }))
+            let person = await AsyncStorage.getItem(`@${image_id}`)
             deleted ? setRecordingsErrorMessage("Record successfully deleted!") : setRecordingsErrorMessage("Record successfully added!")
             setErrorRecordingsMessageColor("green")
-            //console.log("THIS IS THE STORED OBJECT RECORDINGS", person)
         } catch (e) {
             console.error(e);
         }
@@ -127,11 +128,14 @@ const NotesScreen = ({ route, navigation }) => {
             file: recording.getURI()
         })
         setRecordings(updatedRecordings)
-        saveRecordingsToLocalStorage(itemId, false)
+        saveRecordingsToLocalStorage(itemId, false, updatedRecordings)
     }
     const playLocalSound = async (test) => {
-        console.log('Loading Sound', test);
         const sound1 = test.file
+        await Audio.setAudioModeAsync({
+            allowsRecordingIOS: true,
+            playsInSilentModeIOS: true,
+        })
         const { sound } = await Audio.Sound.createAsync(
             {
                 uri: `${sound1}`
@@ -196,7 +200,7 @@ const NotesScreen = ({ route, navigation }) => {
                     var recordingsArray = recordings
                     recordingsArray.splice(i, 1)
                     setRecordings(recordingsArray)
-                    saveRecordingsToLocalStorage(itemId, true)
+                    saveRecordingsToLocalStorage(itemId, true, recordingsArray)
                     loadRecordingsFromLocalStorage(itemId)
                     setEdit(null)
                 }
